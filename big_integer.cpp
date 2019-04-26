@@ -26,6 +26,7 @@ big_integer::big_integer(big_integer &&bi) noexcept {
 
 big_integer::big_integer(const std::string &val) {
     big_integer tmp;
+    tmp._data.reserve(val.size() / 10);
     _sgn = (val[0] == '-');
     auto i = (size_t) _sgn;
     for (; i + 19 <= val.size(); i += 18) {
@@ -120,7 +121,9 @@ big_integer &big_integer::operator*=(const big_integer &bi) {
 
 big_integer &big_integer::_naive_mul(big_integer const &bi) {
     if (is_zero() || bi.is_zero()) {
-        return *this = big_integer();
+        _data.resize(0);
+        _sgn = false;
+        return *this;
     }
     vector<digit_t> dt(_data.size() + bi._data.size());
     _core::_asm_mul(dt.data(), _data.data(), bi._data.data(), _data.size(), bi._data.size());
@@ -151,13 +154,19 @@ big_integer big_integer::_karat_mul(big_integer const &ai, big_integer const &bi
 }
 
 big_integer &big_integer::operator/=(const big_integer &bi) {
-    if (is_zero())
-        return *this = big_integer();
+    if (is_zero()) {
+        _data.resize(0);
+        _sgn = false;
+        return *this;
+    }
     if (bi.is_zero())
         assert(false);
     int cmp = _compare(_data.data(), bi._data.data(), _data.size(), bi._data.size());
-    if (cmp < 0)
-        return *this = big_integer();
+    if (cmp < 0) {
+        _data.resize(0);
+        _sgn = false;
+        return *this;
+    }
     if (cmp == 0)
         return *this = big_integer((int64_t) (_sgn ^ bi._sgn ? -1 : 1));
     if (bi._data.size() == 1) {
@@ -179,19 +188,19 @@ big_integer &big_integer::operator/=(const big_integer &bi) {
     v *= d;
     u._data.resize(n + m + 1);
     v._data.resize(n + 1);
-    big_integer q;
+    big_integer q, cq, r, vq;
     q._data.resize(m + 1);
     for (size_t j = m + 1; j-- > 0;) {
         digit_t rm;
-        big_integer cq = (BASE * from_unsigned_long(u._data[j + n]) + from_unsigned_long(u._data[j + n - 1]));
+        cq = (BASE * from_unsigned_long(u._data[j + n]) + from_unsigned_long(u._data[j + n - 1]));
         cq.div_mod(v._data[n - 1], rm);
-        big_integer r = from_unsigned_long(rm);
+        r = from_unsigned_long(rm);
         while (cq == BASE || cq * from_unsigned_long(v._data[n - 2]) >
                              BASE * r + from_unsigned_long(u._data[j + n - 2])) {
             --cq;
             r += from_unsigned_long(v._data[n - 1]);
         }
-        big_integer vq = v * cq;
+        vq = v * cq;
         vq._data.resize(n + 1);
         digit_t neg = _core::_asm_sub(u._data.data() + j, vq._data.data(), n + 1);
         q._data[j] = (!cq._data.empty() ? cq._data[0] : 0);
