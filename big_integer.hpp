@@ -36,6 +36,7 @@ private:
     static big_integer _karat_mul(big_integer const&, big_integer const&);
     static int _compare(const_ptr, const_ptr, size_t, size_t);
     digit_t _read_digit(const std::string&, size_t, size_t) noexcept;
+    big_integer _division_impl(big_integer const&);
     big_integer &_apply_bitwise(big_integer const& bi, digit_t (*f)(digit_t, digit_t));
     big_integer &_naive_mul(big_integer const&);
 

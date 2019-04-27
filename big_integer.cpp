@@ -153,70 +153,82 @@ big_integer big_integer::_karat_mul(big_integer const &ai, big_integer const &bi
     return ret;
 }
 
-big_integer &big_integer::operator/=(const big_integer &bi) {
+big_integer big_integer::_division_impl(big_integer const& bi) {
     if (is_zero()) {
         _data.resize(0);
         _sgn = false;
-        return *this;
+        return big_integer();
     }
     if (bi.is_zero())
         assert(false);
     int cmp = _compare(_data.data(), bi._data.data(), _data.size(), bi._data.size());
     if (cmp < 0) {
-        _data.resize(0);
-        _sgn = false;
-        return *this;
+        big_integer ret;
+        swap(ret);
+        return ret;
     }
     if (cmp == 0)
         return *this = big_integer((int64_t) (_sgn ^ bi._sgn ? -1 : 1));
     if (bi._data.size() == 1) {
         uint64_t x;
         div_mod(bi._data[0], x);
+        bool olsgn = _sgn;
         _sgn ^= bi._sgn;
-        return *this;
+        return big_integer(olsgn ? -(int64_t)x : (int64_t)x);
     }
-    big_integer u(*this);
+    /* Ageev's optimization - u removed */
     big_integer v(bi);
-    u._sgn = v._sgn = false;
+    bool olsgn = _sgn;
+    _sgn = false;
+    v._sgn = false;
     static big_integer BASE = from_unsigned_long(uint64_t(1) << 32) * from_unsigned_long(uint64_t(1) << 32);
     big_integer d = BASE / (from_unsigned_long((uint64_t) 1) + from_unsigned_long((uint64_t) v._data.back()));
     if (d >= BASE)
         d = BASE - 1;
     size_t n = v._data.size();
-    size_t m = u._data.size() - n;
-    u *= d;
+    size_t m = _data.size() - n;
+    *this *= d;
     v *= d;
-    u._data.resize(n + m + 1);
+    _data.resize(n + m + 1);
     v._data.resize(n + 1);
     big_integer q, cq, r, vq;
     q._data.resize(m + 1);
     for (size_t j = m + 1; j-- > 0;) {
         digit_t rm;
-        cq = (BASE * from_unsigned_long(u._data[j + n]) + from_unsigned_long(u._data[j + n - 1]));
+        cq = (BASE * from_unsigned_long(_data[j + n]) + from_unsigned_long(_data[j + n - 1]));
         cq.div_mod(v._data[n - 1], rm);
         r = from_unsigned_long(rm);
         while (cq == BASE || cq * from_unsigned_long(v._data[n - 2]) >
-                             BASE * r + from_unsigned_long(u._data[j + n - 2])) {
+                             BASE * r + from_unsigned_long(_data[j + n - 2])) {
             --cq;
             r += from_unsigned_long(v._data[n - 1]);
         }
         vq = v * cq;
         vq._data.resize(n + 1);
-        digit_t neg = _core::_asm_sub(u._data.data() + j, vq._data.data(), n + 1);
+        digit_t neg = _core::_asm_sub(_data.data() + j, vq._data.data(), n + 1);
         q._data[j] = (!cq._data.empty() ? cq._data[0] : 0);
         if (neg) {
             --q._data[j];
-            _core::_asm_add(u._data.data() + j, v._data.data(), n + 1);
+            _core::_asm_add(_data.data() + j, v._data.data(), n + 1);
         }
     }
     q._normalize();
-    q._sgn = _sgn ^ bi._sgn;
+    _normalize();
+    q._sgn = olsgn ^ bi._sgn;
+    _sgn = olsgn;
     swap(q);
+    q.div_mod(d._data[0], m);
+    return q;
+}
+
+big_integer &big_integer::operator/=(const big_integer &bi) {
+    _division_impl(bi);
     return *this;
 }
 
 big_integer &big_integer::operator%=(const big_integer &bi) {
-    return *this -= (*this / bi) * bi;
+    *this = _division_impl(bi);
+    return *this;
 }
 
 big_integer &big_integer::div_mod(digit_t x, digit_t &rm) {

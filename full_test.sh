@@ -6,11 +6,11 @@ tm="n"
 while [ -n "$1" ]
 do
     case "$1" in
-        -sr) write="w";;
+        -sr) write="-sr";;
         -su) shutup="-su";;
         -si) show_inp="-si";;
-        -rc) recompile="-rc";;
-        -nocheck) mode="-nocheck";;
+        --rc) recompile="--rc";;
+        --nocheck) mode="--nocheck";;
         -time) tm="-time";;
         --) shift
         break ;;
