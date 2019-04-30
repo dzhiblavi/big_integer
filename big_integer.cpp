@@ -217,7 +217,7 @@ big_integer big_integer::_division_impl(big_integer const& bi) {
     q._sgn = olsgn ^ bi._sgn;
     _sgn = olsgn;
     swap(q);
-    q.div_mod(d._data[0], m);
+    q.div_mod(d._data[0], d._data[0]);
     return q;
 }
 
@@ -337,6 +337,7 @@ big_integer &big_integer::_apply_bitwise(big_integer const &bi, digit_t (*f)(dig
     _sgn = (bool) f((digit_t) _sgn, (digit_t) tb._sgn);
     _normalize();
     _to_signed_repr();
+    _normalize();
     return *this;
 }
 
@@ -485,10 +486,9 @@ void big_integer::_normalize() {
 int big_integer::_compare(big_integer::const_ptr p, big_integer::const_ptr q, size_t szp, size_t szq) {
     if (szp != szq)
         return (szp < szq ? -1 : 1);
-    for (size_t i = szp; i-- > 0;) {
+    for (size_t i = szp; i-- > 0;)
         if (p[i] != q[i])
             return (p[i] < q[i] ? -1 : 1);
-    }
     return 0;
 }
 

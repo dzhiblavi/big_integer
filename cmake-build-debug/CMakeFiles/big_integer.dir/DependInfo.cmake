@@ -5,7 +5,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_ASM_NASM
-  "/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/engine/_asm_vector.asm" "/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/cmake-build-debug/CMakeFiles/big_integer.dir/engine/_asm_vector.asm.o"
+  "/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/engine/_asm_vector.asm" "/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/cmake-build-debug/CMakeFiles/big_integer.dir/engine/_asm_vector.asm.o"
   )
 set(CMAKE_ASM_NASM_COMPILER_ID "NASM")
 
@@ -13,13 +13,13 @@ set(CMAKE_ASM_NASM_COMPILER_ID "NASM")
 set(CMAKE_ASM_NASM_TARGET_INCLUDE_PATH
   )
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/_core_arithmetics.cpp" "/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/cmake-build-debug/CMakeFiles/big_integer.dir/_core_arithmetics.cpp.o"
-  "/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer.cpp" "/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/cmake-build-debug/CMakeFiles/big_integer.dir/big_integer.cpp.o"
-  "/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer_testing.cpp" "/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/cmake-build-debug/CMakeFiles/big_integer.dir/big_integer_testing.cpp.o"
-  "/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/gtest/gtest-all.cc" "/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/cmake-build-debug/CMakeFiles/big_integer.dir/gtest/gtest-all.cc.o"
-  "/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/gtest/gtest_main.cc" "/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/cmake-build-debug/CMakeFiles/big_integer.dir/gtest/gtest_main.cc.o"
+  "/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/_core_arithmetics.cpp" "/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/cmake-build-debug/CMakeFiles/big_integer.dir/_core_arithmetics.cpp.o"
+  "/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer.cpp" "/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/cmake-build-debug/CMakeFiles/big_integer.dir/big_integer.cpp.o"
+  "/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer_testing.cpp" "/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/cmake-build-debug/CMakeFiles/big_integer.dir/big_integer_testing.cpp.o"
+  "/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/gtest/gtest-all.cc" "/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/cmake-build-debug/CMakeFiles/big_integer.dir/gtest/gtest-all.cc.o"
+  "/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/gtest/gtest_main.cc" "/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/cmake-build-debug/CMakeFiles/big_integer.dir/gtest/gtest_main.cc.o"
   )
-set(CMAKE_CXX_COMPILER_ID "GNU")
+set(CMAKE_CXX_COMPILER_ID "AppleClang")
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH

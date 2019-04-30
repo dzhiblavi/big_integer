@@ -7,7 +7,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -fsanitize=address,undefined -D_GC
 enable_language(ASM_NASM)
 
 add_executable(big_integer
-#        main.cpp
                 big_integer_testing.cpp
                 big_integer.cpp
                 gtest/gtest-all.cc
