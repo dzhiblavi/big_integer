@@ -10,24 +10,24 @@
 #include <cstring>
 
 template<typename T>
-void _destruct(T * __restrict _data, size_t size,
+void _destruct(T *__restrict _data, size_t size,
                typename std::enable_if<std::is_trivially_destructible<T>::value>::type * = 0) noexcept {}
 
 template<typename T>
-void _destruct(T * __restrict _data, size_t size,
+void _destruct(T *__restrict _data, size_t size,
                typename std::enable_if<!std::is_trivially_destructible<T>::value>::type * = 0) noexcept {
     for (size_t i = 0; i < size; ++i)
         _data[i].~T();
 }
 
 template<typename T>
-void _copy_construct(T * __restrict _dst, T const * __restrict src, size_t size,
+void _copy_construct(T *__restrict _dst, T const *__restrict src, size_t size,
                      typename std::enable_if<std::is_trivially_copy_constructible<T>::value>::type * = 0) noexcept {
     memcpy(_dst, src, size * sizeof(T));
 }
 
 template<typename T>
-void _copy_construct(T * __restrict _dst, T const * __restrict src, size_t size,
+void _copy_construct(T *__restrict _dst, T const *__restrict src, size_t size,
                      typename std::enable_if<!std::is_trivially_copy_constructible<T>::value>::type * = 0) {
     size_t i = 0;
     try {
@@ -40,15 +40,15 @@ void _copy_construct(T * __restrict _dst, T const * __restrict src, size_t size,
 }
 
 template<typename T>
-void _default_construct(T * __restrict _dst, size_t size,
-        typename std::enable_if<std::is_trivially_constructible<T>::value>::type * = 0) noexcept {
+void _default_construct(T *__restrict _dst, size_t size,
+                        typename std::enable_if<std::is_trivially_constructible<T>::value>::type * = 0) noexcept {
     memset(_dst, 0, size * sizeof(T));
 }
 
 template<typename T>
-void _default_construct(T * __restrict _dst, size_t size,
-        typename std::enable_if<std::is_default_constructible<T>::value
-              & !std::is_trivially_constructible<T>::value>::type * = 0) {
+void _default_construct(T *__restrict _dst, size_t size,
+                        typename std::enable_if<std::is_default_constructible<T>::value
+                                                & !std::is_trivially_constructible<T>::value>::type * = 0) {
     size_t i = 0;
     try {
         for (; i < size; ++i)
@@ -59,7 +59,7 @@ void _default_construct(T * __restrict _dst, size_t size,
     }
 }
 
-template<typename T, size_t _INIT_SO_SIZE = 16>
+template<typename T, size_t _INIT_SO_SIZE = 6>
 class vector {
 public:
     using value_type = T;
@@ -75,10 +75,14 @@ private:
     size_t _size = 0;
     size_t _capacity = _INIT_SO_SIZE;
 
+    void _free_data() noexcept {
+        _destruct(_data, _size);
+        if (!small())
+            operator delete(_data);
+    }
+
     pointer _allocate_new_zone(const_pointer __restrict _src, size_t size, size_t alloc) {
         pointer _alloc_data = static_cast<T *> (operator new(alloc * sizeof(T)));
-        if (!_src)
-            return _alloc_data;
         try {
             _copy_construct(_alloc_data, _src, size);
         } catch (...) {
@@ -88,11 +92,11 @@ private:
         return _alloc_data;
     }
 
-    void _push_back_fast(const_reference x) {
+    void _push_back_short_path(const_reference x) {
         new(_data + _size) T(x);
     }
 
-    void _push_back_slow(const_reference x) {
+    void _push_back_long_path(const_reference x) {
         size_t new_capacity = _capacity << 1;
         pointer _alloc_data = _allocate_new_zone(_data, _size, new_capacity);
         try {
@@ -102,144 +106,154 @@ private:
             operator delete(_alloc_data);
             throw;
         }
-        _remove_data();
+        _free_data();
         _data = _alloc_data;
         _capacity = new_capacity;
     }
 
-    void _internal_resize_fast(size_t size) {
-        _default_construct(_data + _size, size - _size);
+    void _resize_short_path(size_t new_size) {
+        if (new_size > _size)
+            _default_construct(_data + _size, new_size - _size);
+        else if (new_size < _size)
+            _destruct(_data + new_size, _size - new_size);
     }
 
-    void _internal_resize_slow(size_t size) {
-        pointer _alloc_data = _allocate_new_zone(_data, _size, size);
+    void _resize_long_path(size_t new_size) {
+        pointer _alloc_data = _allocate_new_zone(_data, _size, new_size);
         try {
-            _default_construct(_alloc_data + _size, size - _size);
+            _default_construct(_alloc_data + _size, new_size - _size);
         } catch (...) {
             _destruct(_alloc_data, _size);
             operator delete(_alloc_data);
             throw;
         }
-        _remove_data();
+        _free_data();
         _data = _alloc_data;
-        _capacity = size;
-    }
-
-    void _internal_resize_less(size_t size) noexcept {
-        _destruct(_data + size, _size - size);
-    }
-
-    void _internal_resize_greater(size_t size) {
-        if (size <= _capacity)
-            _internal_resize_fast(size);
-        else
-            _internal_resize_slow(size);
-    }
-
-    void _remove_data() noexcept {
-        if (!_data)
-            return;
-        _destruct(_data, _size);
-        if (_data != _small)
-            operator delete(_data);
-    }
-
-    void _large_init_construct(size_t initial_size) {
-        pointer _alloc_data = static_cast<T *> (operator new(initial_size * sizeof(T)));
-        try {
-            _default_construct(_alloc_data, initial_size);
-        } catch (...) {
-            operator delete(_alloc_data);
-            throw;
-        }
-        _data = _alloc_data;
+        _capacity = new_size;
     }
 
 public:
     vector() noexcept = default;
 
     explicit vector(size_t initial_size) {
-        if (initial_size > _INIT_SO_SIZE)
-            _large_init_construct(initial_size);
-        else
+        if (initial_size < _INIT_SO_SIZE)
             _default_construct(_data, initial_size);
-        _size = _capacity = initial_size;
+        else {
+            pointer _alloc_data = static_cast<T *> (operator new(initial_size * sizeof(T)));
+            try {
+                _default_construct(_alloc_data, initial_size);
+            } catch (...) {
+                operator delete(_alloc_data);
+                throw;
+            }
+            _capacity = initial_size;
+            _data = _alloc_data;
+        }
+        _size = initial_size;
     }
 
     ~vector() noexcept {
-        _remove_data();
+        _free_data();
     }
 
-    vector(vector &&v) noexcept {
-        swap(v);
+    vector(vector &&rhs) {
+        swap(rhs);
     }
 
-    vector(vector const &v) {
-        if (v._size > _INIT_SO_SIZE) {
-            _data = _allocate_new_zone(v._data, v._size, v._size);
-        } else
-            _copy_construct(_data, v._data, v._size);
-        _size = _capacity = v._size;
+    vector(vector const &rhs) {
+        if (rhs._size <= _INIT_SO_SIZE)
+            _copy_construct(_data, rhs._data, rhs._size);
+        else {
+            _data = _allocate_new_zone(rhs._data, rhs._size, rhs._size);
+            _capacity = rhs._size;
+        }
+        _size = rhs._size;
     }
 
-    void swap(vector &v) {
-        if (small() && v.small())
-            for (size_t i = 0; i < _INIT_SO_SIZE; ++i)
-                std::swap(v[i], _data[i]);
-        else if (v.small()) {
-            pointer _old_data = _data;
-            _data = _small;
-            _copy_construct(_data, v._data, v._size);
-            _destruct(v._data, v._size);
-            v._data = _old_data;
-        } else if (small())
+    vector& swap(vector &v) {
+        if (small() && v.small()) {
+            for (size_t i = 0; i < std::max(_size, v._size); ++i)
+                std::swap(_data[i], v._data[i]);
+        } else if (small()) {
+            _copy_construct(v._small, _small, _size);
+            _data = v._data;
+            _capacity = v._capacity;
+            v._data = v._small;
+            v._capacity = _INIT_SO_SIZE;
+        } else if (v.small()) {
             v.swap(*this);
-        else
+        } else {
             std::swap(_data, v._data);
+            std::swap(_capacity, v._capacity);
+        }
         std::swap(_size, v._size);
-        std::swap(_capacity, v._capacity);
-    }
-
-    vector &operator=(vector&& v) {
-        swap(v);
         return *this;
     }
 
-    vector &operator=(vector const &v) {
-        if (&v == this)
-            return *this;
-        if (v._size > _INIT_SO_SIZE) {
-            pointer _alloc_data = _allocate_new_zone(v._data, v._size, v._size);
-            _remove_data();
+    vector& operator=(vector&& rhs) {
+        swap(rhs);
+        return *this;
+    }
+
+    vector& operator=(vector const &rhs) {
+        if (rhs._size <= _INIT_SO_SIZE) {
+            _copy_construct(_small, rhs._data, rhs._size);
+            _free_data();
+            _data = _small;
+            _capacity = _INIT_SO_SIZE;
+        } else {
+            pointer _alloc_data = _allocate_new_zone(rhs._data, rhs._size, rhs._size);
+            _free_data();
             _data = _alloc_data;
-        } else
-            _copy_construct(_data, v._data, v._size);
-        _size = _capacity = v._size;
+            _capacity = rhs._size;
+        }
+        _size = rhs._size;
         return *this;
     }
 
-    const_reference operator[](size_t i) const noexcept {
-        return _data[i];
+    void push_back(const_reference x) {
+        if (_size < _capacity)
+            _push_back_short_path(x);
+        else
+            _push_back_long_path(x);
+        ++_size;
     }
 
-    reference operator[](size_t i) noexcept {
-        return _data[i];
+    void pop_back() noexcept {
+        --_size;
+        _destruct(_data + _size, 1);
     }
 
-    const_reference back() const noexcept {
-        return _data[_size - 1];
+    void resize(size_t new_size) {
+        if (new_size <= _capacity)
+            _resize_short_path(new_size);
+        else
+            _resize_long_path(new_size);
+        _size = new_size;
     }
 
-    reference back() noexcept {
-        return _data[_size - 1];
+    reference front() noexcept {
+        return _data[0];
     }
 
     const_reference front() const noexcept {
         return _data[0];
     }
 
-    reference front() noexcept {
-        return _data[0];
+    reference back() noexcept {
+        return _data[_size - 1];
+    }
+
+    const_reference back() const noexcept {
+        return _data[_size - 1];
+    }
+
+    reference operator[](size_t i) {
+        return _data[i];
+    }
+
+    const_reference operator[](size_t i) const noexcept {
+        return _data[i];
     }
 
     pointer data() noexcept {
@@ -254,33 +268,12 @@ public:
         return _size;
     }
 
-    bool empty() const noexcept {
-        return !_size;
-    }
-
     size_t capacity() const noexcept {
         return _capacity;
     }
 
-    void pop_back() noexcept {
-        --_size;
-        _destruct(_data + _size, 1);
-    }
-
-    void push_back(const_reference x) {
-        if (_size < _capacity)
-            _push_back_fast(x);
-        else
-            _push_back_slow(x);
-        ++_size;
-    }
-
-    void resize(size_t size) {
-        if (size < _size)
-            _internal_resize_less(size);
-        else
-            _internal_resize_greater(size);
-        _size = size;
+    bool empty() const noexcept {
+        return !_size;
     }
 
     bool small() const noexcept {
@@ -289,3 +282,23 @@ public:
 };
 
 #endif /* vector.hpp */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

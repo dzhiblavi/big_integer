@@ -12,6 +12,7 @@ do
         -si) show_inp="si";;
         --rc) recompile="rc";;
         --nocheck) mode="raw";;
+        --debug) debug="deb";;
         -time) tm="t";;
         -help) help="HELP";;
         --help) help="HELP";;
@@ -32,14 +33,26 @@ fi
 
 if [ "$recompile" == "rc" ]
 then
-    echo -e "\033[1;34mrecompiling source...\033[0m"
-    g++ -O2 -std=c++11 generator.cpp -o ./tmp/generator
-    g++ -O2 -std=c++11 checker.cpp -o ./tmp/checker
+    if [ "$debug" == "deb" ]
+    then
+        echo -e "\033[1;34mrecompiling source in debug mode...\033[0m"
+        g++ -fsanitize=address,undefined -D_GCXX_DEBUG -O2 -std=c++11 generator.cpp -o ./tmp/generator
+        g++ -fsanitize=address,undefined -D_GCXX_DEBUG -O2 -std=c++11 checker.cpp -o ./tmp/checker
 
-    g++ -c -O2 -std=c++11 exec.cpp -o tmp/exec.o
-    g++ -O2 tmp/exec.o build/CMakeFiles/big_integer.dir/big_integer.cpp.o \
-                   build/CMakeFiles/big_integer.dir/_core_arithmetics.cpp.o \
-                   build/CMakeFiles/big_integer.dir/engine/_asm_vector.asm.o -o tmp/exec
+        g++ -fsanitize=address,undefined -D_GCXX_DEBUG -c -O2 -std=c++11 exec.cpp -o tmp/exec.o
+        g++ -fsanitize=address,undefined -D_GCXX_DEBUG -O2 tmp/exec.o build/CMakeFiles/big_integer.dir/big_integer.cpp.o \
+                       build/CMakeFiles/big_integer.dir/_core_arithmetics.cpp.o \
+                       build/CMakeFiles/big_integer.dir/engine/_asm_vector.asm.o -o tmp/exec
+    else
+        echo -e "\033[1;34mrecompiling source...\033[0m"
+        g++ -O2 -std=c++11 generator.cpp -o ./tmp/generator
+        g++ -O2 -std=c++11 checker.cpp -o ./tmp/checker
+
+        g++ -c -O2 -std=c++11 exec.cpp -o tmp/exec.o
+        g++ -O2 tmp/exec.o build/CMakeFiles/big_integer.dir/big_integer.cpp.o \
+                       build/CMakeFiles/big_integer.dir/_core_arithmetics.cpp.o \
+                       build/CMakeFiles/big_integer.dir/engine/_asm_vector.asm.o -o tmp/exec
+    fi
 fi
 
 ok=0
