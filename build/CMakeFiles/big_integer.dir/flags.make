@@ -9,7 +9,7 @@ ASM_NASM_DEFINES =
 
 ASM_NASM_INCLUDES = 
 
-CXX_FLAGS =  -O3 -pthread -Wall  -O3 -pthread -Wall -fsanitize=address,undefined -D_GCXX_DEBUG -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.14.sdk   -std=gnu++11
+CXX_FLAGS =  -O3 -pthread -Wall -O3 -DNDEBUG -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.14.sdk   -std=gnu++11
 
 CXX_DEFINES = 
 
