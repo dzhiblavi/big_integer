@@ -6,15 +6,15 @@
 
 #IncludeRegexTransform: 
 
-/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/_core_arithmetics.hpp
+/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/_core_arithmetics.hpp
 stdint.h
 -
 cstddef
 -
 
-/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer.cpp
+/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer.cpp
 big_integer.hpp
-/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer.hpp
+/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer.hpp
 cstring
 -
 cstdlib
@@ -22,7 +22,7 @@ cstdlib
 cassert
 -
 
-/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer.hpp
+/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer.hpp
 string
 -
 sstream
@@ -36,13 +36,13 @@ cmath
 stdint.h
 -
 _core_arithmetics.hpp
-/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/_core_arithmetics.hpp
+/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/_core_arithmetics.hpp
 vector
 -
 vector.hpp
-/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/vector.hpp
+/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/vector.hpp
 
-/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer_testing.cpp
+/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer_testing.cpp
 algorithm
 -
 cassert
@@ -56,11 +56,11 @@ algorithm
 utility
 -
 gtest/gtest.h
-/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/gtest/gtest.h
+/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/gtest/gtest.h
 big_integer.hpp
-/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer.hpp
+/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer.hpp
 
-/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/gtest/gtest.h
+/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/gtest/gtest.h
 limits
 -
 ostream
@@ -186,7 +186,7 @@ iosfwd
 vector
 -
 
-/home/dzhiblavi/Documents/prog/cpp/clion/big_integer/vector.hpp
+/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/vector.hpp
 cstddef
 -
 type_traits
