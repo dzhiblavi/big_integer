@@ -11,6 +11,7 @@ do
         -si) show_inp="-si";;
         --rc) recompile="--rc";;
         --nocheck) mode="--nocheck";;
+        --debug) debug="--debug";;
         -time) tm="-time";;
         --) shift
         break ;;
@@ -18,7 +19,7 @@ do
     shift
 done
 
-./stress.sh $write $shutup $show_inp $recompile $mode $tm \
+./stress.sh $write $shutup $show_inp $recompile $debug $mode $tm \
           -- \+ $1 $2 $3 $4
 ./stress.sh $write $shutup $show_inp $mode $tm \
           -- \- $1 $2 $3 $4
