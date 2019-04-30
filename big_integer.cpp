@@ -26,7 +26,6 @@ big_integer::big_integer(big_integer &&bi) noexcept {
 
 big_integer::big_integer(const std::string &val) {
     big_integer tmp;
-    tmp._data.reserve(val.size() / 10);
     _sgn = (val[0] == '-');
     auto i = (size_t) _sgn;
     for (; i + 19 <= val.size(); i += 18) {
