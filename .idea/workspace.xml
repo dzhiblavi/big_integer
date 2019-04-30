@@ -46,7 +46,7 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/vector.hpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="398">
+            <state relative-caret-position="103">
               <caret line="195" column="26" lean-forward="true" selection-start-line="195" selection-start-column="26" selection-end-line="195" selection-end-column="26" />
               <folding>
                 <element signature="e#68#86#0" expanded="true" />
@@ -350,12 +350,12 @@
       <workItem from="1556142002521" duration="658000" />
       <workItem from="1556296559345" duration="36000" />
       <workItem from="1556296610690" duration="691000" />
-      <workItem from="1556635917725" duration="4070000" />
+      <workItem from="1556635917725" duration="4135000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="85307000" />
+    <option name="totallyTimeSpent" value="85372000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -368,7 +368,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1680" height="1050" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49896264" visible="true" weight="0.21794872" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -384,7 +383,7 @@
       <window_info anchor="bottom" id="Messages" order="8" sideWeight="0.85958487" weight="0.6172199" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.11172161" side_tool="true" weight="0.59232366" />
       <window_info anchor="bottom" id="Version Control" order="10" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.88827837" weight="0.61618257" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.88827837" visible="true" weight="0.61618257" />
       <window_info anchor="bottom" id="CMake" order="12" weight="0.33838382" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -535,7 +534,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/vector.hpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="398">
+        <state relative-caret-position="103">
           <caret line="195" column="26" lean-forward="true" selection-start-line="195" selection-start-column="26" selection-end-line="195" selection-end-column="26" />
           <folding>
             <element signature="e#68#86#0" expanded="true" />
