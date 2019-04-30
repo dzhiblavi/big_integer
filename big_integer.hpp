@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include "_core_arithmetics.hpp"
 
-#define STD_VECTOR
+#define SAFE_VECTOR
 
 #ifdef STD_VECTOR
 #include <vector>

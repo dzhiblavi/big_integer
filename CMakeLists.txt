@@ -8,6 +8,7 @@ enable_language(ASM_NASM)
 
 add_executable(big_integer
                 big_integer_testing.cpp
+#                main.cpp
                 big_integer.cpp
                 gtest/gtest-all.cc
                 gtest/gtest_main.cc

@@ -6,26 +6,10 @@
 
 #IncludeRegexTransform: 
 
-/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/_core_arithmetics.cpp
-tgmath.h
--
-_core_arithmetics.hpp
-/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/_core_arithmetics.hpp
-
 /Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/_core_arithmetics.hpp
 stdint.h
 -
 cstddef
--
-
-/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer.cpp
-big_integer.hpp
-/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer.hpp
-cstring
--
-cstdlib
--
-cassert
 -
 
 /Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/big_integer.hpp

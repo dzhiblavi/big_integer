@@ -59,7 +59,7 @@ void _default_construct(T * __restrict _dst, size_t size,
     }
 }
 
-template<typename T>
+template<typename T, size_t _INIT_SO_SIZE = 16>
 class vector {
 public:
     using value_type = T;
@@ -69,9 +69,11 @@ public:
     using const_pointer = T const *;
 
 private:
-    pointer _data = nullptr;
+    T _small[_INIT_SO_SIZE];
+    pointer _data = _small;
+
     size_t _size = 0;
-    size_t _capacity = 0;
+    size_t _capacity = _INIT_SO_SIZE;
 
     pointer _allocate_new_zone(const_pointer __restrict _src, size_t size, size_t alloc) {
         pointer _alloc_data = static_cast<T *> (operator new(alloc * sizeof(T)));
@@ -91,7 +93,7 @@ private:
     }
 
     void _push_back_slow(const_reference x) {
-        size_t new_capacity = _capacity ? _capacity << 1 : 8;
+        size_t new_capacity = _capacity << 1;
         pointer _alloc_data = _allocate_new_zone(_data, _size, new_capacity);
         try {
             new(_alloc_data + _size) T(x);
@@ -138,13 +140,11 @@ private:
         if (!_data)
             return;
         _destruct(_data, _size);
-        operator delete(_data);
+        if (_data != _small)
+            operator delete(_data);
     }
 
-public:
-    vector() noexcept = default;
-
-    explicit vector(size_t initial_size) {
+    void _large_init_construct(size_t initial_size) {
         pointer _alloc_data = static_cast<T *> (operator new(initial_size * sizeof(T)));
         try {
             _default_construct(_alloc_data, initial_size);
@@ -153,6 +153,16 @@ public:
             throw;
         }
         _data = _alloc_data;
+    }
+
+public:
+    vector() noexcept = default;
+
+    explicit vector(size_t initial_size) {
+        if (initial_size > _INIT_SO_SIZE)
+            _large_init_construct(initial_size);
+        else
+            _default_construct(_data, initial_size);
         _size = _capacity = initial_size;
     }
 
@@ -165,13 +175,27 @@ public:
     }
 
     vector(vector const &v) {
-        pointer _alloc_data = _allocate_new_zone(v._data, v._size, v._size);
-        _data = _alloc_data;
+        if (v._size > _INIT_SO_SIZE) {
+            _data = _allocate_new_zone(v._data, v._size, v._size);
+        } else
+            _copy_construct(_data, v._data, v._size);
         _size = _capacity = v._size;
     }
 
     void swap(vector &v) {
-        std::swap(_data, v._data);
+        if (small() && v.small())
+            for (size_t i = 0; i < _INIT_SO_SIZE; ++i)
+                std::swap(v[i], _data[i]);
+        else if (v.small()) {
+            pointer _old_data = _data;
+            _data = _small;
+            _copy_construct(_data, v._data, v._size);
+            _destruct(v._data, v._size);
+            v._data = _old_data;
+        } else if (small())
+            v.swap(*this);
+        else
+            std::swap(_data, v._data);
         std::swap(_size, v._size);
         std::swap(_capacity, v._capacity);
     }
@@ -184,9 +208,12 @@ public:
     vector &operator=(vector const &v) {
         if (&v == this)
             return *this;
-        pointer _alloc_data = _allocate_new_zone(v._data, v._size, v._size);
-        _remove_data();
-        _data = _alloc_data;
+        if (v._size > _INIT_SO_SIZE) {
+            pointer _alloc_data = _allocate_new_zone(v._data, v._size, v._size);
+            _remove_data();
+            _data = _alloc_data;
+        } else
+            _copy_construct(_data, v._data, v._size);
         _size = _capacity = v._size;
         return *this;
     }
@@ -254,6 +281,10 @@ public:
         else
             _internal_resize_greater(size);
         _size = size;
+    }
+
+    bool small() const noexcept {
+        return _data == _small;
     }
 };
 
