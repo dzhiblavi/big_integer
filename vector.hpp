@@ -10,24 +10,24 @@
 #include <cstring>
 
 template<typename T>
-void _destruct(T *_data, size_t size,
+void _destruct(T * __restrict _data, size_t size,
                typename std::enable_if<std::is_trivially_destructible<T>::value>::type * = 0) noexcept {}
 
 template<typename T>
-void _destruct(T *_data, size_t size,
+void _destruct(T * __restrict _data, size_t size,
                typename std::enable_if<!std::is_trivially_destructible<T>::value>::type * = 0) noexcept {
     for (size_t i = 0; i < size; ++i)
         _data[i].~T();
 }
 
 template<typename T>
-void _copy_construct(T *_dst, T const *src, size_t size,
+void _copy_construct(T * __restrict _dst, T const * __restrict src, size_t size,
                      typename std::enable_if<std::is_trivially_copy_constructible<T>::value>::type * = 0) noexcept {
     memcpy(_dst, src, size * sizeof(T));
 }
 
 template<typename T>
-void _copy_construct(T *_dst, T const *src, size_t size,
+void _copy_construct(T * __restrict _dst, T const * __restrict src, size_t size,
                      typename std::enable_if<!std::is_trivially_copy_constructible<T>::value>::type * = 0) {
     size_t i = 0;
     try {
@@ -40,13 +40,13 @@ void _copy_construct(T *_dst, T const *src, size_t size,
 }
 
 template<typename T>
-void _default_construct(T *_dst, size_t size,
-        typename std::enable_if<std::is_trivially_constructible<T>::value>::type * = 0){
+void _default_construct(T * __restrict _dst, size_t size,
+        typename std::enable_if<std::is_trivially_constructible<T>::value>::type * = 0) noexcept {
     memset(_dst, 0, size * sizeof(T));
 }
 
 template<typename T>
-void _default_construct(T *_dst, size_t size,
+void _default_construct(T * __restrict _dst, size_t size,
         typename std::enable_if<std::is_default_constructible<T>::value
               & !std::is_trivially_constructible<T>::value>::type * = 0) {
     size_t i = 0;
@@ -73,7 +73,7 @@ private:
     size_t _size = 0;
     size_t _capacity = 0;
 
-    pointer _allocate_new_zone(const_pointer _src, size_t size, size_t alloc) {
+    pointer _allocate_new_zone(const_pointer __restrict _src, size_t size, size_t alloc) {
         pointer _alloc_data = static_cast<T *> (operator new(alloc * sizeof(T)));
         if (!_src)
             return _alloc_data;
