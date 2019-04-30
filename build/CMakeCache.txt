@@ -18,7 +18,7 @@
 CMAKE_AR:FILEPATH=/Library/Developer/CommandLineTools/usr/bin/ar
 
 //NASM compiler
-CMAKE_ASM_NASM_COMPILER:FILEPATH=/usr/bin/nasm
+CMAKE_ASM_NASM_COMPILER:FILEPATH=/usr/local/bin/nasm
 
 //Flags used by the ASM_NASM compiler during all build types.
 CMAKE_ASM_NASM_FLAGS:STRING=

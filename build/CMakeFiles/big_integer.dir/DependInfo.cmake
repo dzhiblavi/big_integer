@@ -7,6 +7,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_CHECK_ASM_NASM
   "/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/engine/_asm_vector.asm" "/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/build/CMakeFiles/big_integer.dir/engine/_asm_vector.asm.o"
   )
+set(CMAKE_ASM_NASM_COMPILER_ID "NASM")
 
 # The include file search paths:
 set(CMAKE_ASM_NASM_TARGET_INCLUDE_PATH

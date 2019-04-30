@@ -112,7 +112,7 @@ CMakeFiles/big_integer.dir/gtest/gtest_main.cc.s: cmake_force
 CMakeFiles/big_integer.dir/engine/_asm_vector.asm.o: CMakeFiles/big_integer.dir/flags.make
 CMakeFiles/big_integer.dir/engine/_asm_vector.asm.o: ../engine/_asm_vector.asm
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building ASM_NASM object CMakeFiles/big_integer.dir/engine/_asm_vector.asm.o"
-	/usr/bin/nasm $(ASM_NASM_INCLUDES) $(ASM_NASM_FLAGS) -f macho64 -o CMakeFiles/big_integer.dir/engine/_asm_vector.asm.o /Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/engine/_asm_vector.asm
+	/usr/local/bin/nasm $(ASM_NASM_INCLUDES) $(ASM_NASM_FLAGS) -f macho64 -o CMakeFiles/big_integer.dir/engine/_asm_vector.asm.o /Users/dzhiblavi/Documents/prog/cpp/clion/big_integer/engine/_asm_vector.asm
 
 CMakeFiles/big_integer.dir/_core_arithmetics.cpp.o: CMakeFiles/big_integer.dir/flags.make
 CMakeFiles/big_integer.dir/_core_arithmetics.cpp.o: ../_core_arithmetics.cpp
