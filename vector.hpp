@@ -59,7 +59,12 @@ void _default_construct(T *__restrict _dst, size_t size,
     }
 }
 
-template<typename T, size_t _INIT_SO_SIZE = 6>
+/*
+ * default-constructible only
+ * small object optimisation implemented
+ * */
+template<typename T, size_t _INIT_SO_SIZE = 6,
+         typename = typename std::enable_if<std::is_default_constructible<T>::value>::type>
 class vector {
 public:
     using value_type = T;
@@ -133,7 +138,7 @@ private:
     }
 
 public:
-    vector() noexcept = default;
+    vector() = default;
 
     explicit vector(size_t initial_size) {
         if (initial_size < _INIT_SO_SIZE)
@@ -171,18 +176,18 @@ public:
     }
 
     vector& swap(vector &v) {
-        if (small() && v.small()) {
+        if (small() && v.small())
             for (size_t i = 0; i < std::max(_size, v._size); ++i)
                 std::swap(_data[i], v._data[i]);
-        } else if (small()) {
+        else if (small()) {
             _copy_construct(v._small, _small, _size);
             _data = v._data;
             _capacity = v._capacity;
             v._data = v._small;
             v._capacity = _INIT_SO_SIZE;
-        } else if (v.small()) {
+        } else if (v.small())
             v.swap(*this);
-        } else {
+        else {
             std::swap(_data, v._data);
             std::swap(_capacity, v._capacity);
         }
