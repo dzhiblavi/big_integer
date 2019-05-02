@@ -10,7 +10,7 @@
 #include <cstring>
 
 template<typename T>
-void _destruct(T *__restrict _data, size_t size,
+void _destruct(T *__restrict, size_t,
                typename std::enable_if<std::is_trivially_destructible<T>::value>::type * = 0) noexcept {}
 
 template<typename T>
