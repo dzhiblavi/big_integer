@@ -8,9 +8,10 @@
 #include <cstddef>
 #include <type_traits>
 #include <cstring>
+#include <memory>
 
 template<typename T>
-void _destruct(T *__restrict _data, size_t size,
+void _destruct(T *__restrict, size_t,
                typename std::enable_if<std::is_trivially_destructible<T>::value>::type * = 0) noexcept {}
 
 template<typename T>
@@ -62,6 +63,7 @@ void _default_construct(T *__restrict _dst, size_t size,
 /*
  * default-constructible only
  * small object optimisation implemented
+ * copy-on-write optimisation implemented
  * */
 template<typename T, size_t _INIT_SO_SIZE = 6,
          typename = typename std::enable_if<std::is_default_constructible<T>::value>::type>
@@ -72,9 +74,11 @@ public:
     using const_reference = T const &;
     using pointer = T *;
     using const_pointer = T const *;
+    using shared_pointer = std::shared_ptr<T>;
 
 private:
     T _small[_INIT_SO_SIZE];
+    shared_pointer _shp;
     pointer _data = _small;
 
     size_t _size = 0;
@@ -82,8 +86,6 @@ private:
 
     void _free_data() noexcept {
         _destruct(_data, _size);
-        if (!small())
-            operator delete(_data);
     }
 
     pointer _allocate_new_zone(const_pointer __restrict _src, size_t size, size_t alloc) {
@@ -95,6 +97,18 @@ private:
             throw;
         }
         return _alloc_data;
+    }
+
+    void _set_large_data(pointer __restrict _allocated, size_t new_capacity) {
+        _shp.reset(_allocated, [] (pointer _ptr) {});
+        _data = _shp.get();
+        _capacity = new_capacity;
+    }
+
+    void _set_small_data() {
+        _shp.reset();
+        _data = _small;
+        _capacity = _INIT_SO_SIZE;
     }
 
     void _push_back_short_path(const_reference x) {
@@ -112,8 +126,7 @@ private:
             throw;
         }
         _free_data();
-        _data = _alloc_data;
-        _capacity = new_capacity;
+        _set_large_data(_alloc_data, new_capacity);
     }
 
     void _resize_short_path(size_t new_size) {
@@ -133,8 +146,7 @@ private:
             throw;
         }
         _free_data();
-        _data = _alloc_data;
-        _capacity = new_size;
+        _set_large_data(_alloc_data, new_size);
     }
 
 public:
@@ -151,8 +163,7 @@ public:
                 operator delete(_alloc_data);
                 throw;
             }
-            _capacity = initial_size;
-            _data = _alloc_data;
+            _set_large_data(_alloc_data, initial_size);
         }
         _size = initial_size;
     }
@@ -168,10 +179,8 @@ public:
     vector(vector const &rhs) {
         if (rhs._size <= _INIT_SO_SIZE)
             _copy_construct(_data, rhs._data, rhs._size);
-        else {
-            _data = _allocate_new_zone(rhs._data, rhs._size, rhs._size);
-            _capacity = rhs._size;
-        }
+        else
+            _set_large_data(_allocate_new_zone(rhs._data, rhs._size, rhs._size), rhs._size);
         _size = rhs._size;
     }
 
@@ -181,10 +190,8 @@ public:
                 std::swap(_data[i], v._data[i]);
         else if (small()) {
             _copy_construct(v._small, _small, _size);
-            _data = v._data;
-            _capacity = v._capacity;
-            v._data = v._small;
-            v._capacity = _INIT_SO_SIZE;
+            _set_large_data(v._data, v._capacity);
+            v._set_small_data();
         } else if (v.small())
             v.swap(*this);
         else {
@@ -204,13 +211,11 @@ public:
         if (rhs._size <= _INIT_SO_SIZE) {
             _copy_construct(_small, rhs._data, rhs._size);
             _free_data();
-            _data = _small;
-            _capacity = _INIT_SO_SIZE;
+            _set_small_data();
         } else {
             pointer _alloc_data = _allocate_new_zone(rhs._data, rhs._size, rhs._size);
             _free_data();
-            _data = _alloc_data;
-            _capacity = rhs._size;
+            _set_large_data(_alloc_data, rhs._size);
         }
         _size = rhs._size;
         return *this;
