@@ -100,7 +100,7 @@ private:
     }
 
     void _set_large_data(pointer __restrict _allocated, size_t new_capacity) {
-        _shp.reset(_allocated, [] (pointer _ptr) {});
+        _shp.reset(_allocated, [] (pointer _ptr) { operator delete(_ptr); });
         _data = _shp.get();
         _capacity = new_capacity;
     }
@@ -190,7 +190,9 @@ public:
                 std::swap(_data[i], v._data[i]);
         else if (small()) {
             _copy_construct(v._small, _small, _size);
-            _set_large_data(v._data, v._capacity);
+            std::swap(_shp, v._shp);
+            std::swap(_data, v._data);
+            _capacity = v._capacity;
             v._set_small_data();
         } else if (v.small())
             v.swap(*this);
