@@ -65,7 +65,7 @@ void _default_construct(T *__restrict _dst, size_t size,
  * small object optimisation implemented
  * copy-on-write optimisation implemented
  * */
-template<typename T, size_t _INIT_SO_SIZE = 6,
+template<typename T, size_t _INIT_SO_SIZE = 8,
          typename = typename std::enable_if<std::is_default_constructible<T>::value>::type>
 class vector {
 public:
@@ -99,13 +99,13 @@ private:
         return _alloc_data;
     }
 
-    void _set_large_data(pointer __restrict _allocated, size_t new_capacity) {
+    void _set_unique_large_data(pointer __restrict _allocated, size_t new_capacity) {
         _shp.reset(_allocated, [] (pointer _ptr) { operator delete(_ptr); });
         _data = _shp.get();
         _capacity = new_capacity;
     }
 
-    void _set_small_data() {
+    void _set_unique_small_data() {
         _shp.reset();
         _data = _small;
         _capacity = _INIT_SO_SIZE;
@@ -126,7 +126,7 @@ private:
             throw;
         }
         _free_data();
-        _set_large_data(_alloc_data, new_capacity);
+        _set_unique_large_data(_alloc_data, new_capacity);
     }
 
     void _resize_short_path(size_t new_size) {
@@ -146,7 +146,7 @@ private:
             throw;
         }
         _free_data();
-        _set_large_data(_alloc_data, new_size);
+        _set_unique_large_data(_alloc_data, new_size);
     }
 
 public:
@@ -163,7 +163,7 @@ public:
                 operator delete(_alloc_data);
                 throw;
             }
-            _set_large_data(_alloc_data, initial_size);
+            _set_unique_large_data(_alloc_data, initial_size);
         }
         _size = initial_size;
     }
@@ -179,8 +179,11 @@ public:
     vector(vector const &rhs) {
         if (rhs._size <= _INIT_SO_SIZE)
             _copy_construct(_data, rhs._data, rhs._size);
-        else
-            _set_large_data(_allocate_new_zone(rhs._data, rhs._size, rhs._size), rhs._size);
+        else {
+            _shp = rhs._shp; // share ownage
+            _data = _shp.get();
+            _capacity = rhs._capacity;
+        }
         _size = rhs._size;
     }
 
@@ -193,7 +196,7 @@ public:
             std::swap(_shp, v._shp);
             std::swap(_data, v._data);
             _capacity = v._capacity;
-            v._set_small_data();
+            v._set_unique_small_data();
         } else if (v.small())
             v.swap(*this);
         else {
@@ -213,14 +216,31 @@ public:
         if (rhs._size <= _INIT_SO_SIZE) {
             _copy_construct(_small, rhs._data, rhs._size);
             _free_data();
-            _set_small_data();
+            _shp.reset();
+            _set_unique_small_data();
         } else {
-            pointer _alloc_data = _allocate_new_zone(rhs._data, rhs._size, rhs._size);
+            detach();
             _free_data();
-            _set_large_data(_alloc_data, rhs._size);
+            _shp.reset();
+            _shp = rhs._shp;
+            _data = _shp.get();
+            _capacity = rhs._capacity;
         }
         _size = rhs._size;
         return *this;
+    }
+
+    bool unique() const {
+        return _shp.unique();
+    }
+
+    size_t count() const {
+        return _shp.use_count();
+    }
+
+    void detach() {
+        if (!_shp.unique())
+            _set_unique_large_data(_allocate_new_zone(_data, _size, _capacity), _capacity);
     }
 
     void push_back(const_reference x) {
@@ -294,23 +314,3 @@ public:
 };
 
 #endif /* vector.hpp */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

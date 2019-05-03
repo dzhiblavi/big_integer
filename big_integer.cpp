@@ -26,7 +26,6 @@ big_integer::big_integer(big_integer &&bi) noexcept {
 
 big_integer::big_integer(const std::string &val) {
     big_integer tmp;
-//    tmp._data.reserve(val.size() / 10);
     _sgn = (val[0] == '-');
     auto i = (size_t) _sgn;
     for (; i + 19 <= val.size(); i += 18) {
@@ -67,9 +66,22 @@ uint64_t big_integer::_read_digit(const std::string &s, size_t j, size_t len) no
     return ret;
 }
 
+bool big_integer::unique() const {
+    return _data.unique();
+}
+
+size_t big_integer::count() const {
+    return _data.count();
+}
+
+void big_integer::detach() {
+    _data.detach();
+}
+
 big_integer &big_integer::operator+=(const big_integer &bi) {
     if (is_zero())
         return *this = bi;
+    _data.detach();
     if (_sgn == bi._sgn) {
         if (_data.size() < bi._data.size())
             _data.resize(bi._data.size());
@@ -91,6 +103,7 @@ big_integer &big_integer::operator+=(const big_integer &bi) {
 big_integer &big_integer::operator-=(const big_integer &bi) {
     if (is_zero())
         return *this = -bi;
+    _data.detach();
     if (_sgn == bi._sgn) {
         int cmp = _compare(_data.data(), bi._data.data(), _data.size(), bi._data.size());
         if (cmp == 0)
@@ -120,6 +133,7 @@ big_integer &big_integer::operator*=(const big_integer &bi) {
 }
 
 big_integer &big_integer::_naive_mul(big_integer const &bi) {
+    _data.detach();
     if (is_zero() || bi.is_zero()) {
         _data.resize(0);
         _sgn = false;
@@ -154,6 +168,7 @@ big_integer big_integer::_karat_mul(big_integer const &ai, big_integer const &bi
 }
 
 big_integer big_integer::_division_impl(big_integer const& bi) {
+    _data.detach();
     if (is_zero()) {
         _data.resize(0);
         _sgn = false;
@@ -176,9 +191,9 @@ big_integer big_integer::_division_impl(big_integer const& bi) {
         _sgn ^= bi._sgn;
         return big_integer(olsgn ? -(int64_t)x : (int64_t)x);
     }
-    /* Ageev's optimization - u removed */
     big_integer v(bi);
-    bool olsgn = _sgn;
+    v._data.detach();
+    bool old_sgn = _sgn;
     _sgn = false;
     v._sgn = false;
     static big_integer BASE = from_unsigned_long(uint64_t(1) << 32) * from_unsigned_long(uint64_t(1) << 32);
@@ -214,8 +229,8 @@ big_integer big_integer::_division_impl(big_integer const& bi) {
     }
     q._normalize();
     _normalize();
-    q._sgn = olsgn ^ bi._sgn;
-    _sgn = olsgn;
+    q._sgn = old_sgn ^ bi._sgn;
+    _sgn = old_sgn;
     swap(q);
     q.div_mod(d._data[0], d._data[0]);
     return q;
@@ -281,6 +296,7 @@ big_integer big_integer::operator~() const {
 }
 
 big_integer &big_integer::operator<<=(size_t s) {
+    _data.detach();
     size_t l64 = s % 64;
     size_t f64 = s / 64;
     *this *= ((digit_t) 1 << l64);
@@ -292,6 +308,7 @@ big_integer &big_integer::operator<<=(size_t s) {
 }
 
 big_integer &big_integer::operator>>=(size_t s) {
+    _data.detach();
     size_t l64 = s % 64;
     size_t f64 = s / 64;
     *this /= ((digit_t) 1 << l64);
@@ -325,6 +342,7 @@ void big_integer::_to_signed_repr() {
 
 big_integer &big_integer::_apply_bitwise(big_integer const &bi, digit_t (*f)(digit_t, digit_t)) {
     big_integer tb(bi);
+    tb._data.detach();
     if (_data.size() != tb._data.size()) {
         size_t msz = _data.size() > tb._data.size() ? _data.size() : tb._data.size();
         _data.resize(msz);
@@ -440,6 +458,7 @@ std::string to_string(const big_integer &bi) {
     if (bi.is_zero())
         return "0";
     big_integer tmp(bi);
+    tmp._data.detach();
     std::string ret;
     ret.reserve(bi._data.size() * 20);
     uint64_t rm;

@@ -65,6 +65,10 @@ public:
     bool is_zero() const noexcept;
     big_integer& div_mod(uint64_t, uint64_t&);
 
+    bool unique() const;
+    void detach();
+    size_t count() const;
+
     big_integer& operator+=(const big_integer&);
     big_integer& operator-=(const big_integer&);
     big_integer& operator*=(const big_integer&);
