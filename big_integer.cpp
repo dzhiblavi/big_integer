@@ -343,6 +343,7 @@ void big_integer::_to_signed_repr() {
 big_integer &big_integer::_apply_bitwise(big_integer const &bi, digit_t (*f)(digit_t, digit_t)) {
     big_integer tb(bi);
     tb._data.detach();
+    _data.detach();
     if (_data.size() != tb._data.size()) {
         size_t msz = _data.size() > tb._data.size() ? _data.size() : tb._data.size();
         _data.resize(msz);
