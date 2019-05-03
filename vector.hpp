@@ -77,7 +77,7 @@ using shared = shared_ptr<T>;
  * small object optimisation implemented
  * copy-on-write optimisation implemented
  * */
-template<typename T, size_t _INIT_SO_SIZE = 8,
+template<typename T, size_t _INIT_SO_SIZE = 6,
          typename = typename std::enable_if<std::is_default_constructible<T>::value>::type>
 class vector {
 public:
