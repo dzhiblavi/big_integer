@@ -14,4 +14,4 @@ add_executable(big_integer
                 gtest/gtest_main.cc
                 engine/_asm_vector.asm
                 _core_arithmetics.cpp
-                vector.hpp)
+                vector.hpp shared_ptr.hpp)

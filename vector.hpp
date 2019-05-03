@@ -9,6 +9,7 @@
 #include <type_traits>
 #include <cstring>
 #include <memory>
+#include "shared_ptr.hpp"
 
 template<typename T>
 void _destruct(T *__restrict, size_t,
@@ -60,6 +61,17 @@ void _default_construct(T *__restrict _dst, size_t size,
     }
 }
 
+#define SAFE_POINTER
+
+#ifdef STD_POINTER
+template<typename T>
+using shared = std::shared_ptr<T>;
+#endif
+#ifdef SAFE_POINTER
+template<typename T>
+using shared = shared_ptr<T>;
+#endif
+
 /*
  * default-constructible only
  * small object optimisation implemented
@@ -74,7 +86,7 @@ public:
     using const_reference = T const &;
     using pointer = T *;
     using const_pointer = T const *;
-    using shared_pointer = std::shared_ptr<T>;
+    using shared_pointer = shared<T>;
 
 private:
     T _small[_INIT_SO_SIZE];
@@ -100,8 +112,13 @@ private:
     }
 
     void _set_unique_large_data(pointer __restrict _allocated, size_t new_capacity) {
+#ifdef STD_POINTER
         _shp.reset(_allocated, [] (pointer _ptr) { operator delete(_ptr); });
-        _data = _shp.get();
+#endif
+#ifdef SAFE_POINTER
+        _shp.reset(_allocated);
+#endif
+        _data = _allocated;
         _capacity = new_capacity;
     }
 
@@ -153,7 +170,7 @@ public:
     vector() = default;
 
     explicit vector(size_t initial_size) {
-        if (initial_size < _INIT_SO_SIZE)
+        if (initial_size <= _INIT_SO_SIZE)
             _default_construct(_data, initial_size);
         else {
             pointer _alloc_data = static_cast<T *> (operator new(initial_size * sizeof(T)));
@@ -180,8 +197,8 @@ public:
         if (rhs._size <= _INIT_SO_SIZE)
             _copy_construct(_data, rhs._data, rhs._size);
         else {
-            _shp = rhs._shp; // share ownage
-            _data = _shp.get();
+            _shp = rhs._shp;
+            _data = rhs._data;
             _capacity = rhs._capacity;
         }
         _size = rhs._size;
@@ -200,6 +217,7 @@ public:
         } else if (v.small())
             v.swap(*this);
         else {
+            std::swap(_shp, v._shp);
             std::swap(_data, v._data);
             std::swap(_capacity, v._capacity);
         }
@@ -219,11 +237,10 @@ public:
             _shp.reset();
             _set_unique_small_data();
         } else {
-            detach();
-            _free_data();
-            _shp.reset();
+            if (_shp.unique())
+                _free_data();
             _shp = rhs._shp;
-            _data = _shp.get();
+            _data = rhs._data;
             _capacity = rhs._capacity;
         }
         _size = rhs._size;

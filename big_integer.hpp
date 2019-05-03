@@ -82,7 +82,7 @@ public:
 
     big_integer operator-() const;
     big_integer operator+() const;
-    big_integer operator~() const;
+    big_integer operator~();
 
     big_integer& operator<<=(size_t);
     big_integer& operator>>=(size_t);

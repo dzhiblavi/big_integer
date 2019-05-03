@@ -3,6 +3,8 @@
  */
 
 #include <tgmath.h>
+#include <assert.h>
+#include <iostream>
 #include "_core_arithmetics.hpp"
 
 namespace _core {

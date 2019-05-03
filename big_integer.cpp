@@ -291,12 +291,12 @@ big_integer big_integer::operator+() const {
     return ret;
 }
 
-big_integer big_integer::operator~() const {
+big_integer big_integer::operator~() {
     return -*this - 1;
 }
 
 big_integer &big_integer::operator<<=(size_t s) {
-    _data.detach();
+    detach();
     size_t l64 = s % 64;
     size_t f64 = s / 64;
     *this *= ((digit_t) 1 << l64);
@@ -308,7 +308,7 @@ big_integer &big_integer::operator<<=(size_t s) {
 }
 
 big_integer &big_integer::operator>>=(size_t s) {
-    _data.detach();
+    detach();
     size_t l64 = s % 64;
     size_t f64 = s / 64;
     *this /= ((digit_t) 1 << l64);
