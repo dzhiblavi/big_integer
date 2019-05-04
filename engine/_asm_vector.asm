@@ -1,11 +1,11 @@
-global __asm_short_add
-global __asm_short_div
-global __asm_short_sub
-global __asm_sub
-global __asm_add
-global __asm_mul
+global _asm_short_add
+global _asm_short_div
+global _asm_short_sub
+global _asm_sub
+global _asm_add
+global _asm_mul
 
-__asm_short_add:
+_asm_short_add:
     test rdx, rdx
     jz .pre
     lea rax, [rdi + 8 * rdx]
@@ -26,21 +26,7 @@ __asm_short_add:
     xor rax, rax
     ret
 
-__asm_short_div:
-    lea rcx, [rdi - 8]
-    lea rdi, [rdi + 8 * rdx - 8]
-    xor rdx, rdx
-.wl:
-    mov rax, [rdi]
-    div rsi
-    mov [rdi], rax
-    lea rdi, [rdi - 8]
-    cmp rdi, rcx
-    jne .wl
-    mov rax, rdx
-    ret
-
-__asm_short_sub:
+_asm_short_sub:
     test rdx, rdx
     jz .pre
     lea rax, [rdi + 8 * rdx]
@@ -60,7 +46,7 @@ __asm_short_sub:
     xor rax, rax
     ret
 
-__asm_sub:
+_asm_sub:
     test rdx, rdx
     jz .re
     clc
@@ -76,7 +62,7 @@ __asm_sub:
     setc al
     ret
 
-__asm_add:
+_asm_add:
     test rdx, rdx
     jz .re
     clc
@@ -102,7 +88,7 @@ __asm_add:
 ;r11 - result pointer
 ; [rdi] = [rsi] * [rdx], |[rsi]| = rcx, |[rdx]| = r8     <-   input pointers
 ; [rdi] = [rsi] * [r9],  |[rsi]| = rcx, |[r9]| = rbx     <-   rntm pointers
-__asm_mul:
+_asm_mul:
     push rbx
     xor r10, r10 ; zero overflow
     mov r9, rdx ; set r9 to second argument pointer
