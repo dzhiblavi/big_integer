@@ -21,8 +21,7 @@ using std::vector;
 #ifdef SAFE_VECTOR
 #include "vector.hpp"
 #endif
-class big_integer
-{
+class big_integer {
 public:
     using digit_t = uint64_t;
     using digit_ptr = digit_t*;
@@ -65,10 +64,6 @@ public:
     bool is_zero() const noexcept;
     big_integer& div_mod(uint64_t, uint64_t&);
 
-    bool unique() const;
-    void detach();
-    size_t count() const;
-
     big_integer& operator+=(const big_integer&);
     big_integer& operator-=(const big_integer&);
     big_integer& operator*=(const big_integer&);
@@ -89,6 +84,10 @@ public:
     big_integer& operator&=(const big_integer&);
     big_integer& operator|=(const big_integer&);
     big_integer& operator^=(const big_integer&);
+
+    bool unique() const;
+    size_t count() const;
+    void detach();
 
     friend bool operator==(const big_integer&, const big_integer&);
     friend bool operator!=(const big_integer&, const big_integer&);

@@ -8,6 +8,14 @@
 #include <stdint.h>
 #include <cstddef>
 
+#ifdef __APPLE__
+#define _asm_add asm_add
+#define _asm_sub asm_sub
+#define _asm_mul asm_mul
+#define _asm_short_add asm_short_add
+#define _asm_short_sub asm_short_sub
+#endif
+
 namespace _core {
     extern "C" {
         uint64_t _asm_add(uint64_t *, uint64_t const *, size_t);

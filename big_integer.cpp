@@ -28,8 +28,9 @@ big_integer::big_integer(const std::string &val) {
     big_integer tmp;
     _sgn = (val[0] == '-');
     auto i = (size_t) _sgn;
+    big_integer pow10 = _core::_pow10(18);
     for (; i + 19 <= val.size(); i += 18) {
-        tmp *= _core::_pow10(18);
+        tmp *= pow10;
         tmp += _read_digit(val, i, 18);
     }
     if (i < val.size()) {
@@ -64,18 +65,6 @@ uint64_t big_integer::_read_digit(const std::string &s, size_t j, size_t len) no
     for (size_t i = 0; i < len; ++i)
         ret = ret * 10 + (s[j + i] - '0');
     return ret;
-}
-
-bool big_integer::unique() const {
-    return _data.unique();
-}
-
-size_t big_integer::count() const {
-    return _data.count();
-}
-
-void big_integer::detach() {
-    _data.detach();
 }
 
 big_integer &big_integer::operator+=(const big_integer &bi) {
@@ -247,12 +236,8 @@ big_integer &big_integer::operator%=(const big_integer &bi) {
 }
 
 big_integer &big_integer::div_mod(digit_t x, digit_t &rm) {
-    if (is_zero())
-        rm = 0;
-    else {
-        rm = _core::_fast_short_div(_data.data(), x, _data.size());
-        _normalize();
-    }
+    rm = _core::_fast_short_div(_data.data(), x, _data.size());
+    _normalize();
     return *this;
 }
 
@@ -391,13 +376,6 @@ bool operator!=(const big_integer &a, const big_integer &b) {
 }
 
 bool operator<(const big_integer &a, const big_integer &b) {
-    if (a.is_zero() && b.is_zero())
-        return false;
-    if (a.is_zero() || b.is_zero()) {
-        if (a.is_zero())
-            return !b._sgn;
-        return a._sgn;
-    }
     if (a._sgn != b._sgn)
         return a._sgn;
     return a._sgn ^ (big_integer::_compare(a._data.data(), b._data.data(), a._data.size(), b._data.size()) < 0);
@@ -480,6 +458,18 @@ std::string to_string(const big_integer &bi) {
 
 bool big_integer::is_zero() const noexcept {
     return _data.empty() && !_sgn;
+}
+
+bool big_integer::unique() const {
+    return _data.unique();
+}
+
+size_t big_integer::count() const {
+    return _data.count();
+}
+
+void big_integer::detach() {
+    _data.detach();
 }
 
 std::ostream &operator<<(std::ostream &os, const big_integer &bi) {

@@ -13,21 +13,13 @@ namespace _core {
     uint64_t d_normal;
     const __uint128_t t64 = __uint128_t(1) << 64;
 
-    uint64_t high(__uint128_t x) {
-        return x >> 64;
-    }
+    uint64_t high(__uint128_t x) { return x >> 64; }
 
-    uint64_t low(__uint128_t x) {
-        return x;
-    }
+    uint64_t low(__uint128_t x) { return x; }
 
-    uint64_t sll(__uint128_t x, size_t i) {
-        return x << i;
-    }
+    uint64_t sll(__uint128_t x, size_t i) { return x << i; }
 
-    uint64_t srl(__uint128_t x, size_t i) {
-        return x >> i;
-    }
+    uint64_t srl(__uint128_t x, size_t i) { return x >> i; }
 
     void set_constant_divisor(uint64_t d) {
         l = (uint64_t) std::log2(d) + 1;
@@ -52,6 +44,8 @@ namespace _core {
     }
 
     uint64_t _fast_short_div(uint64_t *p, uint64_t x, size_t size) {
+        if (!size)
+            return 0UL;
         set_constant_divisor(x);
         __uint128_t carry = 0UL;
         uint64_t rm;
