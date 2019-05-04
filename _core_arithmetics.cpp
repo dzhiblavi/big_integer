@@ -9,7 +9,6 @@ namespace _core {
     __uint128_t msl;
     uint64_t l;
     uint64_t d_normal;
-    const __uint128_t t64 = __uint128_t(1) << 64;
 
     uint64_t high(__uint128_t x) {
         return x >> 64;

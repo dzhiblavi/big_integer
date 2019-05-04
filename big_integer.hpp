@@ -21,8 +21,7 @@ using std::vector;
 #ifdef SAFE_VECTOR
 #include "vector.hpp"
 #endif
-class big_integer
-{
+class big_integer {
 public:
     using digit_t = uint64_t;
     using digit_ptr = digit_t*;
@@ -56,6 +55,7 @@ public:
     big_integer(big_integer&&) noexcept;
     explicit big_integer(const std::string&);
     static big_integer from_unsigned_long(uint64_t);
+    static big_integer from_uint128_t(__uint128_t);
 
     big_integer& operator=(const big_integer&);
     big_integer& operator=(big_integer&&) noexcept;
@@ -63,7 +63,7 @@ public:
     void swap(big_integer&) noexcept;
     ~big_integer() noexcept = default;
     bool is_zero() const noexcept;
-    big_integer& div_mod(uint64_t, uint64_t&);
+    big_integer& div_long_short(uint64_t, uint64_t &);
 
     big_integer& operator+=(const big_integer&);
     big_integer& operator-=(const big_integer&);
@@ -78,7 +78,7 @@ public:
 
     big_integer operator-() const;
     big_integer operator+() const;
-    big_integer operator~() const;
+    big_integer operator~();
 
     big_integer& operator<<=(size_t);
     big_integer& operator>>=(size_t);
