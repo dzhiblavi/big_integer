@@ -199,8 +199,7 @@ big_integer big_integer::_division_impl(big_integer const& bi) {
     q._data.resize(m + 1);
     for (size_t j = m + 1; j-- > 0;) {
         digit_t rm;
-        cq = (BASE * from_unsigned_long(_data[j + n]) + from_unsigned_long(_data[j + n - 1]));
-        cq.div_mod(v._data[n - 1], rm);
+        cq = (BASE * from_unsigned_long(_data[j + n]) + from_unsigned_long(_data[j + n - 1])).div_mod(v._data[n - 1], rm);
         r = from_unsigned_long(rm);
         while (cq == BASE || cq * from_unsigned_long(v._data[n - 2]) >
                              BASE * r + from_unsigned_long(_data[j + n - 2])) {
@@ -209,12 +208,12 @@ big_integer big_integer::_division_impl(big_integer const& bi) {
         }
         vq = v * cq;
         vq._data.resize(n + 1);
-        digit_t neg = _core::_asm_sub(_data.data() + j, vq._data.data(), n + 1);
+        _core::_asm_sub(_data.data() + j, vq._data.data(), n + 1);
         q._data[j] = (!cq._data.empty() ? cq._data[0] : 0);
-        if (neg) {
-            --q._data[j];
-            _core::_asm_add(_data.data() + j, v._data.data(), n + 1);
-        }
+        // if (neg) {
+        //     --q._data[j];
+        //     _core::_asm_add(_data.data() + j, v._data.data(), n + 1);
+        // }
     }
     q._normalize();
     _normalize();
