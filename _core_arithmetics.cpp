@@ -11,7 +11,6 @@ namespace _core {
     __uint128_t msl;
     uint64_t l;
     uint64_t d_normal;
-    const __uint128_t t64 = __uint128_t(1) << 64;
 
     uint64_t high(__uint128_t x) { return x >> 64; }
 
@@ -48,7 +47,7 @@ namespace _core {
             return 0UL;
         set_constant_divisor(x);
         __uint128_t carry = 0UL;
-        uint64_t rm;
+        uint64_t rm = 0;
         for (size_t i = size; i-- > 0;) {
             carry = (carry << 64) + (__uint128_t) p[i];
             p[i] = divd(carry, x, rm);

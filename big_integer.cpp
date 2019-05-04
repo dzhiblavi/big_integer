@@ -156,26 +156,34 @@ big_integer big_integer::_karat_mul(big_integer const &ai, big_integer const &bi
     return ret;
 }
 
+big_integer big_integer::from_uint128_t(__uint128_t x) {
+    big_integer ret;
+    while (x) {
+        ret._data.push_back(x & UINT64_MAX);
+        x >>= 64;
+    }
+    return ret;
+}
+
+
 big_integer big_integer::_division_impl(big_integer const& bi) {
     _data.detach();
     if (is_zero()) {
         _data.resize(0);
         _sgn = false;
         return big_integer();
-    }
-    if (bi.is_zero())
-        assert(false);
+    } else if (bi.is_zero())
+        throw std::runtime_error("division by zero");
     int cmp = _compare(_data.data(), bi._data.data(), _data.size(), bi._data.size());
     if (cmp < 0) {
         big_integer ret;
         swap(ret);
         return ret;
-    }
-    if (cmp == 0)
+    } else if (cmp == 0)
         return *this = big_integer((int64_t) (_sgn ^ bi._sgn ? -1 : 1));
     if (bi._data.size() == 1) {
         uint64_t x;
-        div_mod(bi._data[0], x);
+        div_long_short(bi._data[0], x);
         bool olsgn = _sgn;
         _sgn ^= bi._sgn;
         return big_integer(olsgn ? -(int64_t)x : (int64_t)x);
@@ -185,42 +193,44 @@ big_integer big_integer::_division_impl(big_integer const& bi) {
     bool old_sgn = _sgn;
     _sgn = false;
     v._sgn = false;
-    static big_integer BASE = from_unsigned_long(uint64_t(1) << 32) * from_unsigned_long(uint64_t(1) << 32);
-    big_integer d = BASE / (from_unsigned_long((uint64_t) 1) + from_unsigned_long((uint64_t) v._data.back()));
-    if (d >= BASE)
-        d = BASE - 1;
+
+    static big_integer BASE = from_uint128_t(_core::t64);
+    big_integer d = from_uint128_t(_core::t64 / (__uint128_t(1) + __uint128_t(v._data.back())));
+    if (d >= BASE) d = BASE - 1;
+
     size_t n = v._data.size();
     size_t m = _data.size() - n;
+
     *this *= d;
     v *= d;
     _data.resize(n + m + 1);
     v._data.resize(n + 1);
     big_integer q, cq, r, vq;
     q._data.resize(m + 1);
+
+    big_integer vdata2 = from_unsigned_long(v._data[n - 2]);
+    big_integer vdata1 = from_unsigned_long(v._data[n - 1]);
+    _core::set_constant_divisor(v._data[n - 1]);
+    digit_t rm;
+
     for (size_t j = m + 1; j-- > 0;) {
-        digit_t rm;
-        cq = (BASE * from_unsigned_long(_data[j + n]) + from_unsigned_long(_data[j + n - 1])).div_mod(v._data[n - 1], rm);
+        cq = from_uint128_t(_core::divd(__uint128_t(_data[j + n]) * _core::t64 + __uint128_t(_data[j + n - 1]), v._data[n - 1], rm));
         r = from_unsigned_long(rm);
-        while (cq == BASE || cq * from_unsigned_long(v._data[n - 2]) >
-                             BASE * r + from_unsigned_long(_data[j + n - 2])) {
+        while (cq == BASE || cq * vdata2 > BASE * r + from_unsigned_long(_data[j + n - 2])) {
             --cq;
-            r += from_unsigned_long(v._data[n - 1]);
+            r += vdata1;
         }
         vq = v * cq;
         vq._data.resize(n + 1);
-        _core::_asm_sub(_data.data() + j, vq._data.data(), n + 1);
         q._data[j] = (!cq._data.empty() ? cq._data[0] : 0);
-        // if (neg) {
-        //     --q._data[j];
-        //     _core::_asm_add(_data.data() + j, v._data.data(), n + 1);
-        // }
+        _core::_asm_sub(_data.data() + j, vq._data.data(), n + 1);
     }
     q._normalize();
     _normalize();
     q._sgn = old_sgn ^ bi._sgn;
     _sgn = old_sgn;
     swap(q);
-    q.div_mod(d._data[0], d._data[0]);
+    q.div_long_short(d._data[0], d._data[0]);
     return q;
 }
 
@@ -234,7 +244,7 @@ big_integer &big_integer::operator%=(const big_integer &bi) {
     return *this;
 }
 
-big_integer &big_integer::div_mod(digit_t x, digit_t &rm) {
+big_integer &big_integer::div_long_short(digit_t x, digit_t& rm) {
     rm = _core::_fast_short_div(_data.data(), x, _data.size());
     _normalize();
     return *this;
@@ -365,8 +375,6 @@ big_integer operator>>(big_integer bi, size_t x) {
 }
 
 bool operator==(const big_integer &a, const big_integer &b) {
-    if (a.is_zero() || b.is_zero())
-        return a.is_zero() && b.is_zero();
     return a._sgn == b._sgn && !big_integer::_compare(a._data.data(), b._data.data(), a._data.size(), b._data.size());
 }
 
@@ -441,7 +449,7 @@ std::string to_string(const big_integer &bi) {
     ret.reserve(bi._data.size() * 20);
     uint64_t rm;
     while (!tmp.is_zero()) {
-        tmp.div_mod(_core::_pow10(18), rm);
+        tmp.div_long_short(_core::_pow10(18), rm);
         for (size_t i = 0; i < 18; ++i) {
             ret.push_back(char('0' + rm % 10));
             rm /= 10;
@@ -497,7 +505,7 @@ int big_integer::_compare(big_integer::const_ptr p, big_integer::const_ptr q, si
         return (szp < szq ? -1 : 1);
     for (size_t i = szp; i-- > 0;)
         if (p[i] != q[i])
-            return (p[i] < q[i] ? -1 : 1);
+            return p[i] < q[i] ? -1 : 1;
     return 0;
 }
 
