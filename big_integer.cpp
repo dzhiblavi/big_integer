@@ -380,15 +380,21 @@ bool operator<(const big_integer &a, const big_integer &b) {
 }
 
 bool operator>(const big_integer &a, const big_integer &b) {
-    return !(a <= b);
+    if (a._sgn != b._sgn)
+        return b._sgn;
+    return a._sgn ^ (big_integer::_compare(a._data.data(), b._data.data(), a._data.size(), b._data.size()) > 0);
 }
 
 bool operator<=(const big_integer &a, const big_integer &b) {
-    return a == b || a < b;
+    if (a._sgn != b._sgn)
+        return a._sgn;
+    return a._sgn ^ (big_integer::_compare(a._data.data(), b._data.data(), a._data.size(), b._data.size()) <=0);
 }
 
 bool operator>=(const big_integer &a, const big_integer &b) {
-    return a == b || a > b;
+    if (a._sgn != b._sgn)
+        return b._sgn;
+    return a._sgn ^ (big_integer::_compare(a._data.data(), b._data.data(), a._data.size(), b._data.size()) >= 0);
 }
 
 big_integer operator+(big_integer a, const big_integer &b) {
