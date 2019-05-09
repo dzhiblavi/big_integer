@@ -6,6 +6,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -mavx -msse4.1 -march=native -pthrea
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -fsanitize=address,undefined -D_GCXX_DEBUG")
 enable_language(ASM_NASM)
 
+include_directories(${PROJECT_SOURCE_DIR}/)
+
 add_executable(big_integer
                 big_integer_testing.cpp
                 big_integer.cpp

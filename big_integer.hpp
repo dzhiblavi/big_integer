@@ -4,13 +4,14 @@
 
 #ifndef big_integer_hpp
 #define big_integer_hpp
+
 #include <string>
 #include <sstream>
 #include <iostream>
 #include <algorithm>
 #include <cmath>
 #include <stdint.h>
-#include "_core_arithmetics.hpp"
+#include <_core_arithmetics.hpp>
 
 #define SAFE_VECTOR
 
@@ -19,8 +20,9 @@
 using std::vector;
 #endif
 #ifdef SAFE_VECTOR
-#include "vector.hpp"
+#include <vector.hpp>
 #endif
+
 class big_integer {
 public:
     using digit_t = uint64_t;
@@ -57,7 +59,7 @@ public:
     static big_integer from_unsigned_long(uint64_t);
     static big_integer from_uint128_t(__uint128_t);
 
-    big_integer& operator=(const big_integer&);
+    big_integer& operator=(const big_integer&) = default;
     big_integer& operator=(big_integer&&) noexcept;
 
     void swap(big_integer&) noexcept;

@@ -7,7 +7,7 @@
 #include <iostream>
 #include <immintrin.h>
 #include <x86intrin.h>
-#include "_core_arithmetics.hpp"
+#include <_core_arithmetics.hpp>
 
 namespace _core {
     __uint128_t msl;
@@ -42,8 +42,7 @@ namespace _core {
     }
 
     uint64_t _fast_short_div(uint64_t *__restrict p, uint64_t x, size_t size) {
-        if (!size)
-            return 0UL;
+        if (!size) return 0UL;
         set_constant_divisor(x);
         __uint128_t carry = 0UL;
         uint64_t rm = 0;
@@ -98,8 +97,7 @@ namespace _core {
 
     uint64_t _pow10(size_t i) {
         static uint64_t _pw[19];
-        if (_pw[i])
-            return _pw[i];
+        if (_pw[i]) return _pw[i];
         return _pw[i] = (uint64_t) std::pow(10, i);
     }
 }

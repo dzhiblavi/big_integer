@@ -2,22 +2,20 @@
     author dzhiblavi
  */
 
-#include "big_integer.hpp"
+#include <big_integer.hpp>
 #include <cstring>
 #include <cstdlib>
 #include <cassert>
 
 big_integer big_integer::from_unsigned_long(uint64_t val) {
     big_integer ret;
-    if (val)
-        ret._data.push_back(val);
+    if (val) ret._data.push_back(val);
     return ret;
 }
 
 big_integer::big_integer(int64_t val)
         : _sgn(val < 0) {
-    if (val)
-        _data.push_back((digit_t) (val < 0 ? -val : val));
+    if (val) _data.push_back((digit_t) (val < 0 ? -val : val));
 }
 
 big_integer::big_integer(big_integer &&bi) noexcept {
@@ -40,14 +38,6 @@ big_integer::big_integer(const std::string &val) {
     tmp._sgn = _sgn;
     swap(tmp);
     _normalize();
-}
-
-big_integer &big_integer::operator=(const big_integer &bi) {
-    if (&bi != this) {
-        _data = bi._data;
-        _sgn = bi._sgn;
-    }
-    return *this;
 }
 
 big_integer &big_integer::operator=(big_integer &&bi) noexcept {
@@ -165,15 +155,13 @@ big_integer big_integer::from_uint128_t(__uint128_t x) {
     return ret;
 }
 
-
 big_integer big_integer::_division_impl(big_integer const& bi) {
     _data.detach();
     if (is_zero()) {
         _data.resize(0);
         _sgn = false;
         return big_integer();
-    } else if (bi.is_zero())
-        throw std::runtime_error("division by zero");
+    }
     int cmp = _compare(_data.data(), bi._data.data(), _data.size(), bi._data.size());
     if (cmp < 0) {
         big_integer ret;
@@ -367,11 +355,13 @@ big_integer &big_integer::operator^=(big_integer const &bi) {
 }
 
 big_integer operator<<(big_integer bi, size_t x) {
-    return bi <<= x;
+    bi <<= x;
+    return bi;
 }
 
 big_integer operator>>(big_integer bi, size_t x) {
-    return bi >>= x;
+    bi >>= x;
+    return bi;
 }
 
 bool operator==(const big_integer &a, const big_integer &b) {
@@ -383,26 +373,22 @@ bool operator!=(const big_integer &a, const big_integer &b) {
 }
 
 bool operator<(const big_integer &a, const big_integer &b) {
-    if (a._sgn != b._sgn)
-        return a._sgn;
+    if (a._sgn != b._sgn) return a._sgn;
     return a._sgn ^ (big_integer::_compare(a._data.data(), b._data.data(), a._data.size(), b._data.size()) < 0);
 }
 
 bool operator>(const big_integer &a, const big_integer &b) {
-    if (a._sgn != b._sgn)
-        return b._sgn;
+    if (a._sgn != b._sgn) return b._sgn;
     return a._sgn ^ (big_integer::_compare(a._data.data(), b._data.data(), a._data.size(), b._data.size()) > 0);
 }
 
 bool operator<=(const big_integer &a, const big_integer &b) {
-    if (a._sgn != b._sgn)
-        return a._sgn;
+    if (a._sgn != b._sgn) return a._sgn;
     return a._sgn ^ (big_integer::_compare(a._data.data(), b._data.data(), a._data.size(), b._data.size()) <=0);
 }
 
 bool operator>=(const big_integer &a, const big_integer &b) {
-    if (a._sgn != b._sgn)
-        return b._sgn;
+    if (a._sgn != b._sgn) return b._sgn;
     return a._sgn ^ (big_integer::_compare(a._data.data(), b._data.data(), a._data.size(), b._data.size()) >= 0);
 }
 
@@ -447,9 +433,8 @@ big_integer operator^(big_integer a, const big_integer &b) {
 }
 
 std::string to_string(const big_integer &bi) {
-    if (bi.is_zero())
-        return "0";
-    big_integer tmp(bi);
+    if (bi.is_zero()) return "0";
+    big_integer tmp(std::move(bi));
     tmp._data.detach();
     std::string ret;
     ret.reserve(bi._data.size() * 20);
@@ -498,12 +483,10 @@ std::istream &operator>>(std::istream &is, big_integer &bi) {
 }
 
 void big_integer::_normalize() {
-    if (is_zero())
-        return;
+    if (is_zero()) return;
     while (!_data.empty() && !_data.back())
         _data.pop_back();
-    if (_data.empty())
-        _sgn = false;
+    if (_data.empty()) _sgn = false;
 }
 
 int big_integer::_compare(big_integer::const_ptr p, big_integer::const_ptr q, size_t szp, size_t szq) {
@@ -516,8 +499,7 @@ int big_integer::_compare(big_integer::const_ptr p, big_integer::const_ptr q, si
 }
 
 big_integer big_integer::_higher(size_t k) const {
-    if (k >= _data.size())
-        return big_integer();
+    if (k >= _data.size()) return big_integer();
     big_integer re;
     re._data.resize(_data.size() - k);
     memcpy(re._data.data(), _data.data() + k, DIGIT_SIZE * re._data.size());
@@ -525,8 +507,7 @@ big_integer big_integer::_higher(size_t k) const {
 }
 
 big_integer big_integer::_lower(size_t k) const {
-    if (k >= _data.size())
-        return *this;
+    if (k >= _data.size()) return *this;
     big_integer re;
     re._data.resize(k);
     memcpy(re._data.data(), _data.data(), DIGIT_SIZE * re._data.size());
@@ -534,8 +515,7 @@ big_integer big_integer::_lower(size_t k) const {
 }
 
 big_integer &big_integer::_shift_left(size_t k) {
-    if (!k)
-        return *this;
+    if (!k) return *this;
     _data.resize(_data.size() + k);
     memmove(_data.data() + k, _data.data(), DIGIT_SIZE * (_data.size() - k));
     memset(_data.data(), 0, DIGIT_SIZE * k);
@@ -543,8 +523,7 @@ big_integer &big_integer::_shift_left(size_t k) {
 }
 
 big_integer &big_integer::_shift_right(size_t k) {
-    if (!k)
-        return *this;
+    if (!k) return *this;
     memmove(_data.data(), _data.data() + k, DIGIT_SIZE * (_data.size() - k));
     _data.resize(_data.size() - k);
     return *this;
