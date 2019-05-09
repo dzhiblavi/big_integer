@@ -6,9 +6,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -pthread -Wall")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -fsanitize=address,undefined -D_GCXX_DEBUG")
 enable_language(ASM_NASM)
 
+include_directories(${PROJECT_SOURCE_DIR}/)
+
 add_executable(big_integer
                 big_integer_testing.cpp
-#                main.cpp
                 big_integer.cpp
                 gtest/gtest-all.cc
                 gtest/gtest_main.cc
