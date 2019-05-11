@@ -9,10 +9,11 @@
 #include <type_traits>
 #include <cstring>
 #include <memory>
+#include <algorithm>
 #include <shared_ptr.hpp>
 
 template<typename T>
-T* _allocate_new_zone(T const* __restrict _src, size_t size, size_t alloc) {
+T* _allocate_new_zone(T const* __restrict__ _src, size_t size, size_t alloc) {
     auto _alloc_data = static_cast<T *> (operator new(alloc * sizeof(T)));
     std::copy(_src, _src + size, _alloc_data);
     return _alloc_data;
@@ -40,7 +41,7 @@ private:
     size_t _size = 0;
     size_t _capacity = _INIT_SO_SIZE;
 
-    void _set_unique_large_data(pointer __restrict _allocated, size_t new_capacity) {
+    void _set_unique_large_data(pointer __restrict__ _allocated, size_t new_capacity) {
         _shp.reset(_allocated);
         _data = _allocated;
         _capacity = new_capacity;
