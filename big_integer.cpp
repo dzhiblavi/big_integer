@@ -71,10 +71,10 @@ big_integer &big_integer::operator+=(const big_integer &bi) {
         if (_data.size() < bi._data.size()) {
             _data.resize(bi._data.size());
         }
-        if (_core::_fast_add(_data.data(), bi._data.data(), bi._data.size())) {
+        if (_core::_asm_add(_data.data(), bi._data.data(), bi._data.size())) {
             if (_data.size() == bi._data.size()) {
                 _data.push_back(1);
-            } else if (_core::_fast_short_add(_data.data() + bi._data.size(), 1, _data.size() - bi._data.size())) {
+            } else if (_core::_asm_short_add(_data.data() + bi._data.size(), 1, _data.size() - bi._data.size())) {
                 _data.push_back(1);
             }
         }
@@ -97,8 +97,8 @@ big_integer &big_integer::operator-=(const big_integer &bi) {
         if (cmp == 0) {
             return *this = big_integer();
         } else if (cmp > 0) {
-            if (_core::_fast_sub(_data.data(), bi._data.data(), bi._data.size())) {
-                _core::_fast_short_sub(_data.data() + bi._data.size(), 1, _data.size() - bi._data.size());
+            if (_core::_asm_sub(_data.data(), bi._data.data(), bi._data.size())) {
+                _core::_asm_short_sub(_data.data() + bi._data.size(), 1, _data.size() - bi._data.size());
             }
         } else {
             big_integer tmp(bi);
@@ -130,7 +130,7 @@ big_integer &big_integer::_naive_mul(big_integer const &bi) {
         return *this;
     }
     vector<digit_t> dt(_data.size() + bi._data.size());
-    _core::_fast_mul(dt.data(), _data.data(), bi._data.data(), _data.size(), bi._data.size());
+    _core::_asm_mul(dt.data(), _data.data(), bi._data.data(), _data.size(), bi._data.size());
     std::swap(_data, dt);
     _sgn ^= bi._sgn;
     _normalize();
@@ -223,7 +223,7 @@ big_integer big_integer::_division_impl(big_integer const& bi) {
         vq = v * cq;
         vq._data.resize(n + 1);
         q._data[j] = (!cq._data.empty() ? cq._data[0] : 0);
-        _core::_fast_sub(_data.data() + j, vq._data.data(), n + 1);
+        _core::_asm_sub(_data.data() + j, vq._data.data(), n + 1);
     }
     q._normalize();
     _normalize();

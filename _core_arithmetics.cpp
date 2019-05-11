@@ -5,8 +5,6 @@
 #include <tgmath.h>
 #include <assert.h>
 #include <iostream>
-#include <immintrin.h>
-#include <x86intrin.h>
 #include <_core_arithmetics.hpp>
 
 namespace _core {
@@ -53,51 +51,6 @@ namespace _core {
             carry = rm;
         }
         return (uint64_t) carry;
-    }
-
-    uint64_t _fast_mul(uint64_t *__restrict dst, uint64_t const *__restrict p, uint64_t const *__restrict q, size_t szp, size_t szq) {
-        unsigned long long c = 0, cc = 0, h;
-        for (size_t i = 0; i < szp; ++i) {
-            c = cc = 0;
-            for (size_t j = 0; j < szq; ++j) {
-                c = _mulx_u64(p[i], q[j], &h);
-                cc = _addcarryx_u64(0, c, cc, &c);
-                cc += _addcarryx_u64(0, dst[i + j], c, (unsigned long long *)(dst + i + j));
-                cc += h;
-            }
-            _fast_short_add(dst + i + szq, cc, szp - i);
-        }
-        return cc;
-    }
-
-    uint64_t _fast_add(uint64_t *__restrict p, uint64_t const *__restrict q, size_t size) {
-        uint8_t c = 0;
-        for (size_t i = 0; i < size; ++i) {
-            c = _addcarryx_u64(c, p[i], q[i], (unsigned long long *)(p + i));
-        }
-        return c;
-    }
-
-    uint64_t _fast_sub(uint64_t *__restrict p, uint64_t const *__restrict q, size_t size) {
-        uint8_t c = 0;
-        for (size_t i = 0; i < size; ++i) {
-            c = _subborrow_u64(c, p[i], q[i], (unsigned long long *)(p + i));
-        }
-        return c;
-    }
-
-    uint64_t _fast_short_add(uint64_t *__restrict p, uint64_t x, size_t size) {
-        for (size_t i = 0; x && i < size; ++i) {
-            x = _addcarryx_u64(0, p[i], x, (unsigned long long *)(p + i));
-        }
-        return x;
-    }
-
-    uint64_t _fast_short_sub(uint64_t *__restrict p, uint64_t x, size_t size) {
-        for (size_t i = 0; x && i < size; ++i) {
-            x = _subborrow_u64(x, p[i], 0, (unsigned long long *)(p + i));
-        }
-        return x;
     }
 
     uint64_t _pow10(size_t i) {
