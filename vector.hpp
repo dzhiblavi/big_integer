@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <cstring>
 #include <memory>
-#include "shared_ptr.hpp"
+#include <shared_ptr.hpp>
 
 template<typename T>
 void _destruct(T *__restrict, size_t,
