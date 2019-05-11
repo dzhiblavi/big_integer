@@ -9,13 +9,17 @@
 
 big_integer big_integer::from_unsigned_long(uint64_t val) {
     big_integer ret;
-    if (val) ret._data.push_back(val);
+    if (val) {
+        ret._data.push_back(val);
+    }
     return ret;
 }
 
 big_integer::big_integer(int64_t val)
         : _sgn(val < 0) {
-    if (val) _data.push_back((digit_t) (val < 0 ? -val : val));
+    if (val) {
+        _data.push_back((digit_t) (val < 0 ? -val : val));
+    }
 }
 
 big_integer::big_integer(big_integer &&bi) noexcept {
@@ -52,23 +56,27 @@ void big_integer::swap(big_integer &bi) noexcept {
 
 uint64_t big_integer::_read_digit(const std::string &s, size_t j, size_t len) noexcept {
     digit_t ret = 0;
-    for (size_t i = 0; i < len; ++i)
+    for (size_t i = 0; i < len; ++i) {
         ret = ret * 10 + (s[j + i] - '0');
+    }
     return ret;
 }
 
 big_integer &big_integer::operator+=(const big_integer &bi) {
-    if (is_zero())
+    if (is_zero()) {
         return *this = bi;
+    }
     _data.detach();
     if (_sgn == bi._sgn) {
-        if (_data.size() < bi._data.size())
+        if (_data.size() < bi._data.size()) {
             _data.resize(bi._data.size());
+        }
         if (_core::_fast_add(_data.data(), bi._data.data(), bi._data.size())) {
-            if (_data.size() == bi._data.size())
+            if (_data.size() == bi._data.size()) {
                 _data.push_back(1);
-            else if (_core::_fast_short_add(_data.data() + bi._data.size(), 1, _data.size() - bi._data.size()))
+            } else if (_core::_fast_short_add(_data.data() + bi._data.size(), 1, _data.size() - bi._data.size())) {
                 _data.push_back(1);
+            }
         }
     } else {
         _sgn ^= 1;
@@ -80,16 +88,18 @@ big_integer &big_integer::operator+=(const big_integer &bi) {
 }
 
 big_integer &big_integer::operator-=(const big_integer &bi) {
-    if (is_zero())
+    if (is_zero()) {
         return *this = -bi;
+    }
     _data.detach();
     if (_sgn == bi._sgn) {
         int cmp = _compare(_data.data(), bi._data.data(), _data.size(), bi._data.size());
-        if (cmp == 0)
+        if (cmp == 0) {
             return *this = big_integer();
-        else if (cmp > 0) {
-            if (_core::_fast_sub(_data.data(), bi._data.data(), bi._data.size()))
+        } else if (cmp > 0) {
+            if (_core::_fast_sub(_data.data(), bi._data.data(), bi._data.size())) {
                 _core::_fast_short_sub(_data.data() + bi._data.size(), 1, _data.size() - bi._data.size());
+            }
         } else {
             big_integer tmp(bi);
             tmp -= *this;
@@ -106,8 +116,9 @@ big_integer &big_integer::operator-=(const big_integer &bi) {
 }
 
 big_integer &big_integer::operator*=(const big_integer &bi) {
-    if (_data.size() < 128 || bi._data.size() < 128)
+    if (_data.size() < 128 || bi._data.size() < 128) {
         return _naive_mul(bi);
+    }
     return *this = _karat_mul(*this, bi);
 }
 
@@ -167,8 +178,9 @@ big_integer big_integer::_division_impl(big_integer const& bi) {
         big_integer ret;
         swap(ret);
         return ret;
-    } else if (cmp == 0)
+    } else if (cmp == 0) {
         return *this = big_integer((int64_t) (_sgn ^ bi._sgn ? -1 : 1));
+    }
     if (bi._data.size() == 1) {
         uint64_t x;
         div_long_short(bi._data[0], x);
@@ -233,6 +245,7 @@ big_integer &big_integer::operator%=(const big_integer &bi) {
 }
 
 big_integer &big_integer::div_long_short(digit_t x, digit_t& rm) {
+    _core::set_constant_divisor(x);
     rm = _core::_fast_short_div(_data.data(), x, _data.size());
     _normalize();
     return *this;
@@ -282,8 +295,9 @@ big_integer &big_integer::operator<<=(size_t s) {
     size_t l64 = s % 64;
     size_t f64 = s / 64;
     *this *= ((digit_t) 1 << l64);
-    if (!f64)
+    if (!f64) {
         return *this;
+    }
     _shift_left(f64);
     _normalize();
     return *this;
@@ -294,8 +308,9 @@ big_integer &big_integer::operator>>=(size_t s) {
     size_t l64 = s % 64;
     size_t f64 = s / 64;
     *this /= ((digit_t) 1 << l64);
-    if (f64)
+    if (f64) {
         _shift_right(f64);
+    }
     _normalize();
     if (_sgn)
         --(*this);
@@ -303,23 +318,27 @@ big_integer &big_integer::operator>>=(size_t s) {
 }
 
 void big_integer::_to_moved_repr() {
-    if (!_sgn || is_zero())
+    if (!_sgn || is_zero()) {
         return;
-    for (size_t i = 0; i < _data.size(); ++i)
+    }
+    for (size_t i = 0; i < _data.size(); ++i) {
         _data[i] = ~_data[i];
+    }
     _sgn = false;
     ++(*this);
     _sgn = true;
 }
 
 void big_integer::_to_signed_repr() {
-    if (!_sgn || is_zero())
+    if (!_sgn || is_zero()) {
         return;
+    }
     _sgn = false;
     --(*this);
     _sgn = true;
-    for (size_t i = 0; i < _data.size(); ++i)
+    for (size_t i = 0; i < _data.size(); ++i) {
         _data[i] = ~_data[i];
+    }
 }
 
 big_integer &big_integer::_apply_bitwise(big_integer const &bi, digit_t (*f)(digit_t, digit_t)) {
@@ -333,8 +352,9 @@ big_integer &big_integer::_apply_bitwise(big_integer const &bi, digit_t (*f)(dig
     }
     _to_moved_repr();
     tb._to_moved_repr();
-    for (size_t i = 0; i < _data.size(); ++i)
+    for (size_t i = 0; i < _data.size(); ++i) {
         _data[i] = f(_data[i], tb._data[i]);
+    }
     _sgn = (bool) f((digit_t) _sgn, (digit_t) tb._sgn);
     _normalize();
     _to_signed_repr();
@@ -439,17 +459,21 @@ std::string to_string(const big_integer &bi) {
     std::string ret;
     ret.reserve(bi._data.size() * 20);
     uint64_t rm;
+    _core::set_constant_divisor(_core::_pow10(18));
     while (!tmp.is_zero()) {
-        tmp.div_long_short(_core::_pow10(18), rm);
+        rm = _core::_fast_short_div(tmp._data.data(), _core::_pow10(18), tmp._data.size());
+        tmp._normalize();
         for (size_t i = 0; i < 18; ++i) {
             ret.push_back(char('0' + rm % 10));
             rm /= 10;
         }
     }
-    while (!ret.empty() && ret.back() == '0')
+    while (!ret.empty() && ret.back() == '0') {
         ret.pop_back();
-    if (bi._sgn)
+    }
+    if (bi._sgn) {
         ret.push_back('-');
+    }
     std::reverse(ret.begin(), ret.end());
     return ret;
 }
@@ -484,22 +508,28 @@ std::istream &operator>>(std::istream &is, big_integer &bi) {
 
 void big_integer::_normalize() {
     if (is_zero()) return;
-    while (!_data.empty() && !_data.back())
+    while (!_data.empty() && !_data.back()) {
         _data.pop_back();
+    }
     if (_data.empty()) _sgn = false;
 }
 
 int big_integer::_compare(big_integer::const_ptr p, big_integer::const_ptr q, size_t szp, size_t szq) {
-    if (szp != szq)
+    if (szp != szq) {
         return (szp < szq ? -1 : 1);
-    for (size_t i = szp; i-- > 0;)
-        if (p[i] != q[i])
+    }
+    for (size_t i = szp; i-- > 0;) {
+        if (p[i] != q[i]) {
             return p[i] < q[i] ? -1 : 1;
+        }
+    }
     return 0;
 }
 
 big_integer big_integer::_higher(size_t k) const {
-    if (k >= _data.size()) return big_integer();
+    if (k >= _data.size()) {
+        return big_integer();
+    }
     big_integer re;
     re._data.resize(_data.size() - k);
     memcpy(re._data.data(), _data.data() + k, DIGIT_SIZE * re._data.size());
@@ -507,7 +537,9 @@ big_integer big_integer::_higher(size_t k) const {
 }
 
 big_integer big_integer::_lower(size_t k) const {
-    if (k >= _data.size()) return *this;
+    if (k >= _data.size()) {
+        return *this;
+    }
     big_integer re;
     re._data.resize(k);
     memcpy(re._data.data(), _data.data(), DIGIT_SIZE * re._data.size());
@@ -515,7 +547,9 @@ big_integer big_integer::_lower(size_t k) const {
 }
 
 big_integer &big_integer::_shift_left(size_t k) {
-    if (!k) return *this;
+    if (!k) {
+        return *this;
+    }
     _data.resize(_data.size() + k);
     memmove(_data.data() + k, _data.data(), DIGIT_SIZE * (_data.size() - k));
     memset(_data.data(), 0, DIGIT_SIZE * k);
@@ -523,7 +557,9 @@ big_integer &big_integer::_shift_left(size_t k) {
 }
 
 big_integer &big_integer::_shift_right(size_t k) {
-    if (!k) return *this;
+    if (!k) {
+        return *this;
+    }
     memmove(_data.data(), _data.data() + k, DIGIT_SIZE * (_data.size() - k));
     _data.resize(_data.size() - k);
     return *this;

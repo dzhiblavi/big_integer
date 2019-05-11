@@ -10,6 +10,7 @@
 
 namespace _core {
     const __uint128_t t64 = __uint128_t(1) << 64;
+    
     void set_constant_divisor(uint64_t d);
     uint64_t divd(__uint128_t n, uint64_t d, uint64_t& rm);
     uint64_t _pow10(size_t);

@@ -42,8 +42,9 @@ namespace _core {
     }
 
     uint64_t _fast_short_div(uint64_t *__restrict p, uint64_t x, size_t size) {
-        if (!size) return 0UL;
-        set_constant_divisor(x);
+        if (!size) {
+            return 0UL;
+        }
         __uint128_t carry = 0UL;
         uint64_t rm = 0;
         for (size_t i = size; i-- > 0;) {
@@ -71,33 +72,39 @@ namespace _core {
 
     uint64_t _fast_add(uint64_t *__restrict p, uint64_t const *__restrict q, size_t size) {
         uint8_t c = 0;
-        for (size_t i = 0; i < size; ++i)
+        for (size_t i = 0; i < size; ++i) {
             c = _addcarryx_u64(c, p[i], q[i], (unsigned long long *)(p + i));
+        }
         return c;
     }
 
     uint64_t _fast_sub(uint64_t *__restrict p, uint64_t const *__restrict q, size_t size) {
         uint8_t c = 0;
-        for (size_t i = 0; i < size; ++i)
+        for (size_t i = 0; i < size; ++i) {
             c = _subborrow_u64(c, p[i], q[i], (unsigned long long *)(p + i));
+        }
         return c;
     }
 
     uint64_t _fast_short_add(uint64_t *__restrict p, uint64_t x, size_t size) {
-        for (size_t i = 0; x && i < size; ++i)
+        for (size_t i = 0; x && i < size; ++i) {
             x = _addcarryx_u64(0, p[i], x, (unsigned long long *)(p + i));
+        }
         return x;
     }
 
     uint64_t _fast_short_sub(uint64_t *__restrict p, uint64_t x, size_t size) {
-        for (size_t i = 0; x && i < size; ++i)
+        for (size_t i = 0; x && i < size; ++i) {
             x = _subborrow_u64(x, p[i], 0, (unsigned long long *)(p + i));
+        }
         return x;
     }
 
     uint64_t _pow10(size_t i) {
         static uint64_t _pw[19];
-        if (_pw[i]) return _pw[i];
+        if (_pw[i]) {
+            return _pw[i];
+        }
         return _pw[i] = (uint64_t) std::pow(10, i);
     }
 }

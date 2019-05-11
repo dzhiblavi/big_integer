@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
+#include <random>
 #include "gtest/gtest.h"
 
 #include "big_integer.hpp"
@@ -571,8 +572,11 @@ TEST(correctness, mul_div_randomized) {
 
         for (size_t i = 0; i != number_of_multipliers; ++i)
             accumulator *= multipliers[i];
+        
+        std::random_device rd;
+        std::mt19937 g(rd());
 
-        std::random_shuffle(multipliers.begin(), multipliers.end());
+        std::shuffle(multipliers.begin(), multipliers.end(), g);
 
         for (size_t i = 1; i != number_of_multipliers; ++i)
             accumulator /= multipliers[i];
