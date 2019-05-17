@@ -14,16 +14,16 @@
 
 template<typename T>
 T* _allocate_new_zone(T const* __restrict__ _src, size_t size, size_t alloc) {
-    auto _alloc_data = static_cast<T *> (operator new(alloc * sizeof(T)));
-    std::copy(_src, _src + size, _alloc_data);
-    return _alloc_data;
+    auto _allocdata_ = static_cast<T *> (operator new(alloc * sizeof(T)));
+    std::copy(_src, _src + size, _allocdata_);
+    return _allocdata_;
 }
 
 /*
  * small object
  * copy-on-write
  * */
-template<typename T, size_t _INIT_SO_SIZE = 6>
+template<typename T, size_t INIT_SO_SIZE_ = 6>
 class vector {
 public:
     using value_type = T;
@@ -34,85 +34,85 @@ public:
     using shared_pointer = shared_ptr<T>;
 
 private:
-    T _small[_INIT_SO_SIZE];
-    shared_pointer _shp;
-    pointer _data = _small;
+    T small_[INIT_SO_SIZE_];
+    shared_pointer shp_;
+    pointer data_ = small_;
 
-    size_t _size = 0;
-    size_t _capacity = _INIT_SO_SIZE;
+    size_t size_ = 0;
+    size_t capacity_ = INIT_SO_SIZE_;
 
-    void _set_unique_large_data(pointer __restrict__ _allocated, size_t new_capacity) {
-        _shp.reset(_allocated);
-        _data = _allocated;
-        _capacity = new_capacity;
+    void _set_unique_large_data_(pointer __restrict__ allocated_, size_t new_capacity_) {
+        shp_.reset(allocated_);
+        data_ = allocated_;
+        capacity_ = new_capacity_;
     }
 
-    void _set_unique_small_data() {
-        _shp.reset();
-        _data = _small;
-        _capacity = _INIT_SO_SIZE;
+    void _set_unique_small_data_() {
+        shp_.reset();
+        data_ = small_;
+        capacity_ = INIT_SO_SIZE_;
     }
 
     void _push_back_short_path(const_reference x) {
-        new(_data + _size) T(x);
+        new(data_ + size_) T(x);
     }
 
     void _push_back_long_path(const_reference x) {
-        size_t new_capacity = _capacity << 1;
-        pointer _alloc_data = _allocate_new_zone(_data, _size, new_capacity);
+        size_t new_capacity_ = capacity_ << 1;
+        pointer alloc_data_ = _allocate_new_zone(data_, size_, new_capacity_);
         try {
-            new(_alloc_data + _size) T(x);
+            new(alloc_data_ + size_) T(x);
         } catch (...) {
-            std::destroy(_alloc_data, _alloc_data + _size);
-            operator delete(_alloc_data);
+            std::destroy(alloc_data_, alloc_data_ + size_);
+            operator delete(alloc_data_);
             throw;
         }
-        std::destroy(_data, _data + _size);
-        _set_unique_large_data(_alloc_data, new_capacity);
+        std::destroy(data_, data_ + size_);
+        _set_unique_large_data_(alloc_data_, new_capacity_);
     }
 
-    void _resize_short_path(size_t new_size) {
-        if (new_size > _size) {
-            std::uninitialized_fill(_data + _size, _data + new_size, T());
-        } else if (new_size < _size) {
-            std::destroy(_data + new_size, _data + _size);
+    void _resize_short_path(size_t new_size_) {
+        if (new_size_ > size_) {
+            std::uninitialized_fill(data_ + size_, data_ + new_size_, T());
+        } else if (new_size_ < size_) {
+            std::destroy(data_ + new_size_, data_ + size_);
         }
     }
 
-    void _resize_long_path(size_t new_size) {
-        pointer _alloc_data = _allocate_new_zone(_data, _size, new_size);
+    void _resize_long_path(size_t new_size_) {
+        pointer alloc_data_ = _allocate_new_zone(data_, size_, new_size_);
         try {
-            std::uninitialized_fill(_alloc_data + _size, _alloc_data + new_size, T());
+            std::uninitialized_fill(alloc_data_ + size_, alloc_data_ + new_size_, T());
         } catch (...) {
-            std::destroy(_alloc_data, _alloc_data + _size);
-            operator delete(_alloc_data);
+            std::destroy(alloc_data_, alloc_data_ + size_);
+            operator delete(alloc_data_);
             throw;
         }
-        std::destroy(_data, _data + _size);
-        _set_unique_large_data(_alloc_data, new_size);
+        std::destroy(data_, data_ + size_);
+        _set_unique_large_data_(alloc_data_, new_size_);
     }
 
 public:
     vector() = default;
 
     template<typename = typename std::enable_if<std::is_default_constructible_v<T>>::type>
-    explicit vector(size_t initial_size) {
-        if (initial_size <= _INIT_SO_SIZE) {
-            std::uninitialized_fill(_data, _data + initial_size, T());
+    explicit vector(size_t initial_size_) {
+        if (initial_size_ <= INIT_SO_SIZE_) {
+            std::uninitialized_fill(data_, data_ + initial_size_, T());
         } else {
-            auto _alloc_data = static_cast<pointer> (operator new(initial_size * sizeof(T)));
+            auto alloc_data_ = static_cast<pointer> (operator new(initial_size_ * sizeof(T)));
             try {
-                std::uninitialized_fill(_alloc_data, _alloc_data + initial_size, T());
+                std::uninitialized_fill(alloc_data_, alloc_data_ + initial_size_, T());
             } catch (...) {
-                operator delete (_alloc_data);
+                operator delete (alloc_data_);
             }
-            _set_unique_large_data(_alloc_data, initial_size);
+            _set_unique_large_data_(alloc_data_, initial_size_);
         }
-        _size = initial_size;
+        size_ = initial_size_;
     }
 
     ~vector() noexcept {
-        std::destroy(_data, _data + _size);
+        std::destroy(data_, data_ + size_);
     }
 
     vector(vector &&rhs) {
@@ -120,33 +120,33 @@ public:
     }
 
     vector(vector const &rhs) {
-        if (rhs._size <= _INIT_SO_SIZE) {
-            std::copy(rhs._data, rhs._data + rhs._size, _data);
+        if (rhs.size_ <= INIT_SO_SIZE_) {
+            std::copy(rhs.data_, rhs.data_ + rhs.size_, data_);
         } else {
-            _shp = rhs._shp;
-            _data = rhs._data;
-            _capacity = rhs._capacity;
+            shp_ = rhs.shp_;
+            data_ = rhs.data_;
+            capacity_ = rhs.capacity_;
         }
-        _size = rhs._size;
+        size_ = rhs.size_;
     }
 
     vector& swap(vector &v) {
         if (small() && v.small()) {
-            std::swap_ranges(_data, _data + _INIT_SO_SIZE, v._data);
+            std::swap_ranges(data_, data_ + INIT_SO_SIZE_, v.data_);
         } else if (small()) {
-            std::copy(_small, _small + _size, v._small);
-            std::swap(_shp, v._shp);
-            std::swap(_data, v._data);
-            _capacity = v._capacity;
-            v._set_unique_small_data();
+            std::copy(small_, small_ + size_, v.small_);
+            std::swap(shp_, v.shp_);
+            std::swap(data_, v.data_);
+            capacity_ = v.capacity_;
+            v._set_unique_small_data_();
         } else if (v.small()) {
             v.swap(*this);
         } else {
-            std::swap(_shp, v._shp);
-            std::swap(_data, v._data);
-            std::swap(_capacity, v._capacity);
+            std::swap(shp_, v.shp_);
+            std::swap(data_, v.data_);
+            std::swap(capacity_, v.capacity_);
         }
-        std::swap(_size, v._size);
+        std::swap(size_, v.size_);
         return *this;
     }
 
@@ -156,107 +156,357 @@ public:
     }
 
     vector& operator=(vector const &rhs) {
-        if (rhs._size <= _INIT_SO_SIZE) {
-            std::copy(rhs._data, rhs._data + rhs._size, _small);
-            std::destroy(_data, _data + _size);
-            _shp.reset();
-            _set_unique_small_data();
+        if (rhs.size_ <= INIT_SO_SIZE_) {
+            std::copy(rhs.data_, rhs.data_ + rhs.size_, small_);
+            std::destroy(data_, data_ + size_);
+            shp_.reset();
+            _set_unique_small_data_();
         } else {
-            if (_shp.unique()) {
-                std::destroy(_data, _data + _size);
+            if (shp_.unique()) {
+                std::destroy(data_, data_ + size_);
             }
-            _shp = rhs._shp;
-            _data = rhs._data;
-            _capacity = rhs._capacity;
+            shp_ = rhs.shp_;
+            data_ = rhs.data_;
+            capacity_ = rhs.capacity_;
         }
-        _size = rhs._size;
+        size_ = rhs.size_;
         return *this;
     }
 
     bool unique() const {
-        return _shp.unique();
+        return shp_.unique();
     }
 
     size_t count() const {
-        return _shp.use_count();
+        return shp_.use_count();
     }
 
     void detach() {
-        if (!_shp.unique()) {
-            _set_unique_large_data(_allocate_new_zone(_data, _size, _capacity), _capacity);
+        if (!shp_.unique()) {
+            _set_unique_large_data_(_allocate_new_zone(data_, size_, capacity_), capacity_);
         }
     }
 
     void push_back(const_reference x) {
-        if (_size < _capacity) {
+        if (size_ < capacity_) {
             _push_back_short_path(x);
         } else {
             _push_back_long_path(x);
         }
-        ++_size;
+        ++size_;
     }
 
     void pop_back() noexcept {
-        --_size;
-        _data[_size].~T();
+        --size_;
+        data_[size_].~T();
     }
 
-    void resize(size_t new_size) {
-        if (new_size <= _capacity) {
-            _resize_short_path(new_size);
+    void resize(size_t newsize_) {
+        if (newsize_ <= capacity_) {
+            _resize_short_path(newsize_);
         } else {
-            _resize_long_path(new_size);
+            _resize_long_path(newsize_);
         }
-        _size = new_size;
+        size_ = newsize_;
     }
 
     reference front() noexcept {
-        return _data[0];
+        return data_[0];
     }
 
     const_reference front() const noexcept {
-        return _data[0];
+        return data_[0];
     }
 
     reference back() noexcept {
-        return _data[_size - 1];
+        return data_[size_ - 1];
     }
 
     const_reference back() const noexcept {
-        return _data[_size - 1];
+        return data_[size_ - 1];
     }
 
     reference operator[](size_t i) {
-        return _data[i];
+        return data_[i];
     }
 
     const_reference operator[](size_t i) const noexcept {
-        return _data[i];
+        return data_[i];
     }
 
     pointer data() noexcept {
-        return _data;
+        return data_;
     }
 
     const_pointer data() const noexcept {
-        return _data;
+        return data_;
     }
 
     size_t size() const noexcept {
-        return _size;
+        return size_;
     }
 
     size_t capacity() const noexcept {
-        return _capacity;
+        return capacity_;
     }
 
     bool empty() const noexcept {
-        return !_size;
+        return !size_;
     }
 
     bool small() const noexcept {
-        return _data == _small;
+        return data_ == small_;
+    }
+
+    struct const_iterator : std::iterator<std::random_access_iterator_tag, value_type,
+            std::ptrdiff_t, const_pointer, const_reference> {
+        const_iterator() = default;
+
+        const_iterator(const_iterator const& rhs) = default;
+        const_iterator& operator=(const_iterator const& rhs) = default;
+
+        bool operator==(const_iterator const& rhs) {
+            return ptr_ == rhs.ptr_;
+        }
+
+        bool operator!=(const_iterator const& rhs) {
+            return ptr_ != rhs.ptr_;
+        }
+
+        const_iterator& operator++() {
+            ++ptr_;
+            return *this;
+        }
+
+        const_iterator& operator--() {
+            --ptr_;
+            return *this;
+        }
+
+        const_iterator operator++(int) {
+            const_iterator ret(*this);
+            ++*this;
+            return *ret;
+        }
+
+        const_iterator operator--(int) {
+            const_iterator ret(*this);
+            --*this;
+            return *ret;
+        }
+
+        const_reference operator*() {
+            return *ptr_;
+        }
+
+        const_pointer operator->() {
+            return ptr_;
+        }
+
+        bool operator<(const_iterator const& rhs) {
+            return ptr_ < rhs.ptr_;
+        }
+
+        bool operator>(const_iterator const& rhs) {
+            return ptr_ > rhs.ptr_;
+        }
+
+        bool operator<=(const_iterator const& rhs) {
+            return ptr_ <= rhs.ptr_;
+        }
+
+        bool operator>=(const_iterator const& rhs) {
+            return ptr_ >= rhs.ptr_;
+        }
+
+        const_iterator& operator+=(size_t n) {
+            ptr_ += n;
+            return *this;
+        }
+
+        const_iterator& operator-=(size_t n) {
+            ptr_ -= n;
+            return *this;
+        }
+
+        const_reference operator[](size_t n) {
+            return ptr_[n];
+        }
+
+        friend std::ptrdiff_t operator-(const_iterator const& p, const_iterator const& q) {
+            return p.ptr_ - q.ptr_;
+        }
+
+        friend const_iterator operator+(const_iterator p, size_t n) {
+            return std::move(p += n);
+        }
+
+        friend const_iterator operator-(const_iterator p, size_t n) {
+            return std::move(p -= n);
+        }
+
+        friend const_iterator operator+(size_t n, const_iterator const& p) {
+            return std::move(p + n);
+        }
+
+        friend const_iterator vector::begin() const;
+        friend const_iterator vector::end() const;
+
+    private:
+        const_iterator(const_pointer ptr) : ptr_(ptr) {}
+
+        const_pointer ptr_;
+    };
+
+    struct iterator : std::iterator<std::random_access_iterator_tag, value_type,
+            std::ptrdiff_t, pointer, reference> {
+        iterator() = default;
+
+        iterator(iterator const& rhs) = default;
+        iterator& operator=(iterator const& rhs) = default;
+
+        bool operator==(iterator const& rhs) {
+            return ptr_ == rhs.ptr_;
+        }
+
+        bool operator!=(iterator const& rhs) {
+            return ptr_ != rhs.ptr_;
+        }
+
+        iterator& operator++() {
+            ++ptr_;
+            return *this;
+        }
+
+        iterator& operator--() {
+            --ptr_;
+            return *this;
+        }
+
+        iterator operator++(int) {
+            iterator ret(*this);
+            ++*this;
+            return *ret;
+        }
+
+        iterator operator--(int) {
+            iterator ret(*this);
+            --*this;
+            return *ret;
+        }
+
+        reference operator*() {
+            return *ptr_;
+        }
+
+        pointer operator->() {
+            return ptr_;
+        }
+
+        bool operator<(iterator const& rhs) {
+            return ptr_ < rhs.ptr_;
+        }
+
+        bool operator>(iterator const& rhs) {
+            return ptr_ > rhs.ptr_;
+        }
+
+        bool operator<=(iterator const& rhs) {
+            return ptr_ <= rhs.ptr_;
+        }
+
+        bool operator>=(iterator const& rhs) {
+            return ptr_ >= rhs.ptr_;
+        }
+
+        iterator& operator+=(size_t n) {
+            ptr_ += n;
+            return *this;
+        }
+
+        iterator& operator-=(size_t n) {
+            ptr_ -= n;
+            return *this;
+        }
+
+        reference operator[](size_t n) {
+            return ptr_[n];
+        }
+
+        friend std::ptrdiff_t operator-(iterator const& p, iterator const& q) {
+            return p.ptr_ - q.ptr_;
+        }
+
+        friend iterator operator+(iterator p, size_t n) {
+            return std::move(p += n);
+        }
+
+        friend iterator operator-(iterator p, size_t n) {
+            return std::move(p -= n);
+        }
+
+        friend iterator operator+(size_t n, iterator const& p) {
+            return std::move(p + n);
+        }
+
+        friend iterator vector::begin();
+        friend iterator vector::end();
+
+    private:
+        iterator(pointer ptr) : ptr_(ptr) {}
+
+        pointer ptr_ = nullptr;
+    };
+
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+
+    const_iterator begin() const {
+        return const_iterator(data_);
+    }
+
+    const_iterator end() const {
+        return const_iterator(data_ + size_);
+    }
+
+    const_reverse_iterator rbegin() const {
+        if (empty()) {
+            return const_reverse_iterator();
+        }
+        return const_reverse_iterator(end());
+    }
+
+    const_reverse_iterator rend() const {
+        if (empty()) {
+            return const_reverse_iterator();
+        }
+        return const_reverse_iterator(begin());
+    }
+
+    iterator begin() {
+        return iterator(data_);
+    }
+
+    iterator end() {
+        return iterator(data_ + size_);
+    }
+
+    reverse_iterator rbegin() {
+        if (empty()) {
+            return reverse_iterator();
+        }
+        return reverse_iterator(end());
+    }
+
+    reverse_iterator rend() {
+        if (empty()) {
+            return reverse_iterator();
+        }
+        return reverse_iterator(begin());
     }
 };
+
+
+
 
 #endif /* vector.hpp */
